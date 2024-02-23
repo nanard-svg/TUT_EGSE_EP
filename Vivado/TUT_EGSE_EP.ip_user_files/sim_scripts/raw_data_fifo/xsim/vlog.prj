@@ -1,0 +1,6 @@
+verilog xil_defaultlib  \
+"../../../../TUT_EGSE_EP.gen/sources_1/ip/raw_data_fifo/sim/raw_data_fifo.v" \
+
+verilog xil_defaultlib "glbl.v"
+
+nosort
