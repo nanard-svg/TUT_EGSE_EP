@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<com.sigasi.hdt.shared.librarymapping.model:LibraryMappings xmlns:com.sigasi.hdt.shared.librarymapping.model="com.sigasi.hdt.vhdl.scoping.librarymapping" Version="2">
+  <Mappings Location="Common Libraries/IEEE" Library="ieee"/>
+  <Mappings Location="Common Libraries/IEEE Synopsys" Library="ieee"/>
+  <Mappings Location="Common Libraries" Library="not mapped"/>
+  <Mappings Location="Vivado/TUT_EGSE_EP.cache" Library="not mapped"/>
+  <Mappings Location="Vivado/TUT_EGSE_EP.ip_user_files/ip/clk_wiz_0/clk_wiz_0_stub.vhdl" Library="not mapped"/>
+  <Mappings Location="Vivado/TUT_EGSE_EP.ip_user_files/ip/fifo_pipe_in_w32_1024_r32_1024/fifo_pipe_in_w32_1024_r32_1024_stub.vhdl" Library="not mapped"/>
+  <Mappings Location="Vivado/TUT_EGSE_EP.ip_user_files/ip/fifo_pipe_out_w32_1024_r32_1024/fifo_pipe_out_w32_1024_r32_1024_stub.vhdl" Library="not mapped"/>
+  <Mappings Location="Vivado/TUT_EGSE_EP.ip_user_files/ip/fifo_pipe_out_w32_2048_r32_2048/fifo_pipe_out_w32_2048_r32_2048_stub.vhdl" Library="not mapped"/>
+  <Mappings Location="Vivado/TUT_EGSE_EP.ip_user_files/ip/raw_data_fifo/raw_data_fifo_stub.vhdl" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/TestBench.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okBTPipeIn.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okBTPipeOut.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okDualHost.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okHost.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okLibrary_sim.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okPipeIn.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okPipeOut.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okRegisterBridge.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okTriggerIn.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okTriggerOut.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okWireIn.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okWireOR.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/okWireOut.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/parameters.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/read_file.vhd" Library="not mapped"/>
+  <Mappings Location="sources_Simulation/USB3/VHDL/write_file.vhd" Library="not mapped"/>
+  <Mappings Location="Common Libraries/STD" Library="std"/>
+  <Mappings Location="" Library="work"/>
+</com.sigasi.hdt.shared.librarymapping.model:LibraryMappings>

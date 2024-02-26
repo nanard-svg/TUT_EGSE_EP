@@ -124,6 +124,7 @@ architecture RTL of FIR_filter is
     signal sum               : signed(16 downto 0);
     signal enable_FIR_filter : std_logic;
     signal count             : unsigned(17 downto 0);
+    signal count_inter_ready : unsigned(17 downto 0);
     signal init_FIR_filter   : std_logic;
 
 begin
@@ -313,14 +314,14 @@ begin
     process(i_clk_slow, i_reset) is
     begin
         if i_reset = '1' then
-            --enable_FIR_filter <= '0';
+        --enable_FIR_filter <= '0';
 
         elsif rising_edge(i_clk_slow) then
 
             if data31_out_mult /= 0 then
- 
+
                 --enable_FIR_filter <= '1';
-                
+
             end if;
 
         end if;
@@ -341,6 +342,23 @@ begin
                     init_FIR_filter <= '1';
                 end if;
             end if;
+        end if;
+    end process;
+
+    -------------------------------------------------------------------
+    -- 
+    -------------------------------------------------------------------
+    process(i_clk_slow, i_reset) is
+    begin
+        if i_reset = '1' then
+            count_inter_ready <= (others => '0');
+        elsif rising_edge(i_clk_slow) then
+            count_inter_ready <= count_inter_ready + 1;
+
+            if i_ready = '1' then
+                count_inter_ready <= (others => '0');
+            end if;
+
         end if;
     end process;
 
