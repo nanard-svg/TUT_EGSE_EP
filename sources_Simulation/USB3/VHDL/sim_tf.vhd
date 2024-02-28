@@ -1054,10 +1054,27 @@ begin
         --WireOutValue <= GetWireOutValue(x"01");
         UpdateWireOuts;
 
-        wait for 100 us;
+        wait for 2000 us;
 
-        --ReadFromPipeOut(x"A1", 128);
-        Check_PipeOut(MODE_LFSR);
+        ReadFromPipeOut(x"A1", 220*4);	-- read on pipe out
+        --Check_PipeOut(MODE_LFSR);
+		ReadFromPipeOut(x"A3", 220*4);	-- read on pipe out
+        --Check_PipeOut(MODE_LFSR);
+
+        wait for 500 us;
+        pipeIn := pipeIn_signal;
+        WriteToPipeIn(x"80", pipeInSize_count * 4); --  0x80 injection 
+
+        wait for 10 us;
+
+        --WireOutValue <= GetWireOutValue(x"01");
+        UpdateWireOuts;
+
+        wait for 2000 us;
+
+        ReadFromPipeOut(x"A1", 220*4);	-- read on pipe out
+        --Check_PipeOut(MODE_LFSR);
+
 
         wait;
 

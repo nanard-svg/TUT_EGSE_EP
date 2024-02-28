@@ -74,15 +74,15 @@ class DESTester:
         return(True)
 
     def ResetDES(self):
-        self.xem.SetWireInValue(0x00, 0x00000001)
+        self.xem.SetWireInValue(0x00, 0x20000001)
         self.xem.UpdateWireIns()
 
     def unResetDES(self):
-        self.xem.SetWireInValue(0x00, 0x00000000)
+        self.xem.SetWireInValue(0x00, 0x20000000)
         self.xem.UpdateWireIns()
 
     def start_capture(self):
-        self.xem.SetWireInValue(0x00, 0x00000002)
+        self.xem.SetWireInValue(0x00, 0x20000002)
         self.xem.UpdateWireIns()
 
     def setwire(self):

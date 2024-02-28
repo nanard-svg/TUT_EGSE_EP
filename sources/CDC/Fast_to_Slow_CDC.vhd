@@ -25,6 +25,7 @@ architecture RTL of Fast_to_Slow_CDC is
     --cdc
     signal ready_3 : std_logic;
     signal ready_4 : std_logic;
+    signal reset_ready : std_logic;
 
 begin
 ------------------------------------------------------------------------------------------
@@ -32,9 +33,9 @@ begin
 -- Detect fast ready with clock pin
 --
 ------------------------------------------------------------------------------------------
-    label_cdc_first : process(i_ready, ready_4) is
+    label_cdc_first : process(i_ready, reset_ready) is
     begin
-        if ready_4 = '1' then
+        if reset_ready = '1' then
             --  meta
             ready_1 <= '0';
         elsif rising_edge(i_ready) then
@@ -42,9 +43,9 @@ begin
         end if;
     end process;
 
-    label_cdc : process(i_clk_slow, ready_4) is
+    label_cdc : process(i_clk_slow, reset_ready) is
     begin
-        if ready_4 = '1' then
+        if reset_ready = '1' then
 
             --  meta
             ready_2 <= '0';
@@ -60,6 +61,8 @@ begin
 
         end if;
     end process;
+
+    reset_ready <= ready_4 or i_reset;
 
     --ready_out <= ready_3 and not ready_4;
     --o_ready   <= ready_out;

@@ -18,7 +18,7 @@ list_array_pipe_out_MSB_0 = []
 list_array_pipe_out_LSB_0 = []
 
 
-file_names = ['Signal_ADC_20keV.txt','Signal_ADC_100keV.txt','Signal_ADC_200keV.txt','Signal_ADC_400keV.txt','Signal_ADC_600keV.txt','Signal_ADC_800keV.txt','Signal_ADC_1000keV.txt']
+file_names = ['Signal_ADC_20keV.txt','Signal_ADC_100keV.txt','Signal_ADC_200keV.txt','Signal_ADC_400keV.txt','Signal_ADC_600keV.txt','Signal_ADC_800keV.txt']
 
 #list_pipe_in_array = np.ones(2048).astype(int)
 
@@ -27,6 +27,7 @@ file_names = ['Signal_ADC_20keV.txt','Signal_ADC_100keV.txt','Signal_ADC_200keV.
 
 
 array_pipe_out = np.ones(512).astype(int)
+list_pipe_in_array = np.ones(252).astype(int)
 
 #################################################
 #list_pipe_in = np.array(ma_liste)
@@ -75,15 +76,15 @@ class DESTester:
         return(True)
 
     def ResetDES(self):
-        self.xem.SetWireInValue(0x00, 0x00000001)
+        self.xem.SetWireInValue(0x00, 0x00000001)# ADC mode disable , clear RAM spectre disable, continuous mode disable, reset enable
         self.xem.UpdateWireIns()
 
     def unResetDES(self):
-        self.xem.SetWireInValue(0x00, 0x00000000)
+        self.xem.SetWireInValue(0x00, 0x00000000)# ADC mode disable , clear RAM spectre disable, continuous mode disable, reset disable
         self.xem.UpdateWireIns()
 
     def start_capture(self):
-        self.xem.SetWireInValue(0x00, 0x00000002)
+        self.xem.SetWireInValue(0x00, 0x00000002)# ADC mode disable , clear RAM spectre disable, continuous mode disable, capture start,  reset enable
         self.xem.UpdateWireIns()
 
     def setwire(self):
@@ -216,7 +217,7 @@ for file_name in file_names:
 ################################### TEST fifo pipe out read pointer FILTER 1 ##############################################
     adress_wire_out_science = 0x23
     des.getwire(adress_wire_out_science)
-    while ((get != 1024) ):
+    while (get != 252 and get != 1024) :
         #print("############################################")
         print("read pointer  {}".format(get))
         #print("##############################################")
@@ -237,7 +238,7 @@ for file_name in file_names:
 ################################### TEST fifo pipe out read pointer FILTER 0 ##############################################
     adress_wire_out_science = 0x20
     des.getwire(adress_wire_out_science)
-    while ((get != 1024) ):
+    while (get != 252 and get != 1024 ) :
         #print("############################################")
         print("read pointer  {}".format(get))
         #print("##############################################")

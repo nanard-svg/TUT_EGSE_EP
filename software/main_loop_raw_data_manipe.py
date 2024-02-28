@@ -75,15 +75,15 @@ class DESTester:
         return(True)
 
     def ResetDES(self):
-        self.xem.SetWireInValue(0x00, 0x80000001)
+        self.xem.SetWireInValue(0x00, 0xA0000001)# ADC mode enable , clear RAM spectre disable, continuous mode enable, reset enable
         self.xem.UpdateWireIns()
 
     def unResetDES(self):
-        self.xem.SetWireInValue(0x00, 0x80000000)
+        self.xem.SetWireInValue(0x00, 0xA0000000)# ADC mode enable , clear RAM spectre disable, continuous mode enable, reset disable
         self.xem.UpdateWireIns()
 
     def start_capture(self):
-        self.xem.SetWireInValue(0x00, 0x80000002)
+        self.xem.SetWireInValue(0x00, 0xA0000002)# ADC mode enable , clear RAM spectre disable, continuous mode enable, enable capture start
         self.xem.UpdateWireIns()
 
     def setwire(self):

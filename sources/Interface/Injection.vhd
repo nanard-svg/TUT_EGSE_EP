@@ -4,17 +4,18 @@ use ieee.numeric_std.all;
 
 entity Injection is
     port(
-        reset               : in  std_logic;
-        clk_60Mhz           : in  std_logic;
+        reset                     : in  std_logic;
+        clk_60Mhz                 : in  std_logic;
         --fifo
-        o_pipe_in_rd_en     : out std_logic;
-        i_pipe_in_empty     : in  std_logic;
-        i_pipe_in_valid     : in  std_logic;
-        i_pipe_in_dout      : in  signed(15 downto 0);
+        i_discontinuous_injection : in  std_logic;
+        o_pipe_in_rd_en           : out std_logic;
+        i_pipe_in_empty           : in  std_logic;
+        i_pipe_in_valid           : in  std_logic;
+        i_pipe_in_dout            : in  signed(15 downto 0);
         --output injection
-        o_injection_started : out std_logic;
-        o_data              : out signed(15 downto 0);
-        o_ready             : out std_logic
+        o_injection_started       : out std_logic;
+        o_data                    : out signed(15 downto 0);
+        o_ready                   : out std_logic
     );
 end entity Injection;
 
@@ -39,7 +40,7 @@ begin
             count            <= (others => '0');
             count_wait_valid <= (others => '0');
 
-            o_data              <= (others => '0');
+            o_data              <= x"8AD0";
             o_ready             <= '0';
             wait_one_cycle      <= '0';
             o_injection_started <= '0';
@@ -71,7 +72,7 @@ begin
 
                     count_wait_valid <= count_wait_valid + 1;
 
-                    if i_pipe_in_valid = '1' and i_pipe_in_empty = '0' then
+                    if i_pipe_in_valid = '1'  then
                         o_data              <= i_pipe_in_dout;
                         o_ready             <= '1'; -- ready have to work every To_integer(count) = 43 when empty = '1'
                         o_injection_started <= '1';
@@ -94,14 +95,18 @@ begin
 
                     wait_one_cycle <= not wait_one_cycle;
 
-                    if wait_one_cycle = '1' then
+                    if wait_one_cycle = '1' and i_discontinuous_injection = '1' then
                         o_ready        <= '1';
                         pipe_in_rd_en  <= '0';
                         state          <= wait_sampling_time;
                         wait_one_cycle <= '0';
-
+                    else
+                        if wait_one_cycle = '1' and i_discontinuous_injection = '0' then
+                            pipe_in_rd_en  <= '0';
+                            state          <= wait_sampling_time;
+                            wait_one_cycle <= '0';
+                        end if;
                     end if;
-
             end case;
         end if;
     end process;

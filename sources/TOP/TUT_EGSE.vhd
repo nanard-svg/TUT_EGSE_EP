@@ -126,6 +126,7 @@ architecture arch of TUT_EGSE is
     signal empty_fifo_pipe_out_raw_data : STD_LOGIC_VECTOR(1 downto 0);
     signal din_fifo_raw_data            : Array_config_32signedx2_type;
     signal injection_started            : std_logic;
+    signal discontinuous_injection      : std_logic;
 
     --signal ep23wire : std_logic_vector(31 downto 0);
     --signal ep24wire : std_logic_vector(31 downto 0);
@@ -215,8 +216,9 @@ begin
     i_Start_Capture(0) <= ep00wire(1);
     i_Start_Capture(1) <= ep00wire(1);
 
-    reset        <= (not locked) or reset_wire;
-    enable_erase <= ep00wire(30);
+    reset                   <= (not locked) or reset_wire;
+    enable_erase            <= ep00wire(30);
+    discontinuous_injection <= ep00wire(29);
 
     ------------------------------------------
     -- Instantiate the okHost and connect endpoints
@@ -254,30 +256,31 @@ begin
         );
 
     ------------------------------------------
-    --  Injection to CDC
+    --  Injection
     ------------------------------------------  
 
     label_Injection : entity work.Injection
         port map(
             --global
-            reset               => reset,
-            clk_60Mhz           => clk_60Mhz,
-            --from pipe in Injection
-            o_pipe_in_rd_en     => pipe_in_injection_rd_en_fifo,
-            i_pipe_in_empty     => pipe_in_injection_empty_fifo,
-            i_pipe_in_valid     => pipe_in_injection_valid_fifo,
-            i_pipe_in_dout      => signed(pipe_in_injection_dout_fifo(15 downto 0)),
-            --output injection
-            o_injection_started => injection_started,
-            o_data              => data_fast_injection,
-            o_ready             => ready_fast_injection
+            reset                     => reset,
+            clk_60Mhz                 => clk_60Mhz,
+            --from pipe in fifo Injection
+            i_discontinuous_injection => discontinuous_injection,
+            o_pipe_in_rd_en           => pipe_in_injection_rd_en_fifo,
+            i_pipe_in_empty           => pipe_in_injection_empty_fifo,
+            i_pipe_in_valid           => pipe_in_injection_valid_fifo,
+            i_pipe_in_dout            => signed(pipe_in_injection_dout_fifo(15 downto 0)),
+            --output injection to CDC
+            o_injection_started       => injection_started,
+            o_data                    => data_fast_injection,
+            o_ready                   => ready_fast_injection
         );
 
     ------------------------------------------
     --  ADC to keeper
     ------------------------------------------  
 
-    label_ADC : entity work.Rx_fe
+    label_read_ADC : entity work.Rx_fe
         port map(
             --global
             clk        => clk_60Mhz,
@@ -375,6 +378,7 @@ begin
                 i_clk_slow                     => sys_clk,
                 i_reset                        => reset,
                 --remote FSM raw data
+                i_discontinuous_injection      => discontinuous_injection,
                 i_level_trigger                => i_level_trigger(N),
                 i_Start_Capture                => i_Start_Capture(N),
                 --input
@@ -400,6 +404,7 @@ begin
             if reset = '1' then
                 i_level_trigger(N) <= '0';
             elsif rising_edge(sys_clk) then
+                --  test if injection mode to avoid trigger on value 0
                 if (signed(ep01wire(15 downto 0)) < data_before_filter(N) and injection_started = '1' and ep00wire(31) = '0') or (signed(ep01wire(15 downto 0)) < data_before_filter(N) and ep00wire(31) = '1') then
                     i_level_trigger(N) <= '1';
                 else
