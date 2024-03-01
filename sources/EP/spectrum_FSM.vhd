@@ -52,6 +52,7 @@ begin
             o_pipe_out_spectrum_din   <= (others => '0');
             o_pipe_out_spectrum_wr_en <= '0';
             spectrum_count_pulse      <= (others => '0');
+            o_spectrum_count_pulse    <= (others => '0');
             TM_Byte_index             <= 0;
 
         --stamp <= (others => '0');
@@ -121,7 +122,9 @@ begin
 
                         when 0 =>       -- write ID
                             o_pipe_out_spectrum_wr_en <= '1';
-                            o_pipe_out_spectrum_din   <= "1000"&"000"&i_filter_number&x"0000" &"0000000" &i_set_synchro_spectrum;
+                            o_pipe_out_spectrum_din   <= "1000" & "000" & i_filter_number & x"0000" & "0000000" & i_set_synchro_spectrum;
+
+                            o_spectrum_count_pulse <= spectrum_count_pulse;
                         --------------------------------------------------------
                         when 1 =>       -- write TimeMSB
                             o_pipe_out_spectrum_din <= x"AAAAAAAA";
@@ -170,27 +173,27 @@ begin
                     o_pipe_out_spectrum_wr_en <= '0';
                     state                     <= dispatch;
 
---                when end_to_gse =>
---
---                    TM_Byte_index <= TM_Byte_index + 1;
---
---                    case TM_Byte_index is
---
---                        when 0 =>       -- 
---                            o_pipe_out_spectrum_wr_en <= '1';
---                            o_pipe_out_spectrum_din   <= x"00000000";
---                        --------------------------------------------------------
---                        when 1 =>
---                            o_pipe_out_spectrum_din <= x"00000000";
---                            TM_Byte_index           <= 0;
---                            state                   <= dispatch;
---                        --------------------------------------------------------
---                        when others =>
---
---                    end case;
+                --                when end_to_gse =>
+                --
+                --                    TM_Byte_index <= TM_Byte_index + 1;
+                --
+                --                    case TM_Byte_index is
+                --
+                --                        when 0 =>       -- 
+                --                            o_pipe_out_spectrum_wr_en <= '1';
+                --                            o_pipe_out_spectrum_din   <= x"00000000";
+                --                        --------------------------------------------------------
+                --                        when 1 =>
+                --                            o_pipe_out_spectrum_din <= x"00000000";
+                --                            TM_Byte_index           <= 0;
+                --                            state                   <= dispatch;
+                --                        --------------------------------------------------------
+                --                        when others =>
+                --
+                --                    end case;
 
                 when dispatch =>
-                    
+
                     o_pipe_out_spectrum_wr_en <= '0';
 
                     if i_clk_synchro_spectrum = not (i_set_synchro_spectrum(0)) then
@@ -207,7 +210,6 @@ begin
         end if;
     end process;
 
-    o_addr                 <= std_logic_vector(addr);
-    o_spectrum_count_pulse <= spectrum_count_pulse;
+    o_addr <= std_logic_vector(addr);
 
 end architecture RTL;

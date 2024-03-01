@@ -8,7 +8,7 @@ entity FSM_raw_data is
         i_clk_slow                     : in  std_logic;
         i_reset                        : in  std_logic;
         --input
-        i_discontinuous_injection      : in  std_logic;
+        i_continuous_injection         : in  std_logic;
         i_level_trigger                : in  std_logic;
         i_Start_Capture                : in  std_logic;
         i_din_fifo_raw_data            : in  signed(31 downto 0);
@@ -50,7 +50,7 @@ begin
             empty => open
         );
 
-    o_din_fifo_pipe_out_raw_data <= signed(dout) when i_discontinuous_injection = '1' else i_din_fifo_raw_data;
+    o_din_fifo_pipe_out_raw_data <= signed(dout) when i_continuous_injection = '1' else i_din_fifo_raw_data;
 
     ------------------------------------------------------------------------------------------------
     -- Initial raw buffer filling
@@ -91,15 +91,15 @@ begin
 
                     o_wr_en_fifo_pipe_out_raw_data <= '0';
 
-                    if i_Start_Capture = '1' and i_discontinuous_injection = '1' then -- from trig in?
+                    if i_Start_Capture = '1' and i_continuous_injection = '1' then -- from trig in?
                         state <= WAIT_EVENT;
                     else
-                        if i_Start_Capture = '1' and i_discontinuous_injection = '0' and i_ready = '1' then
+                        if i_Start_Capture = '1' and i_continuous_injection = '0' and i_ready = '1' then
                             o_wr_en_fifo_pipe_out_raw_data <= '1';
                         else
                             o_wr_en_fifo_pipe_out_raw_data <= '0';
-                        end if;    
-                        
+                        end if;
+
                     end if;
 
                 when WAIT_EVENT =>

@@ -16,7 +16,7 @@ list_array_pipe_out_MSB = []
 list_array_pipe_out_LSB = []
 list_array_pipe_out_MSB_0 = []
 list_array_pipe_out_LSB_0 = []
-
+param_vals=0
 
 file_names = ['Signal_ADC_20keV.txt','Signal_ADC_200keV.txt','Signal_ADC_20keV.txt','Signal_ADC_200keV.txt','Signal_ADC_20keV.txt','Signal_ADC_200keV.txt','Signal_ADC_20keV.txt','Signal_ADC_200keV.txt']
 
@@ -74,16 +74,16 @@ class DESTester:
         print ("FrontPanel support is available.")
         return(True)
 
-    def ResetDES(self):
-        self.xem.SetWireInValue(0x00, 0xA0000001)# ADC mode enable , clear RAM spectre disable, continuous mode enable, reset enable
+    def ResetDES(self,param_vals):
+        self.xem.SetWireInValue(0x00, param_vals)# ADC mode disable , clear RAM spectre disable, continuous mode disable, reset enable
         self.xem.UpdateWireIns()
 
-    def unResetDES(self):
-        self.xem.SetWireInValue(0x00, 0xA0000000)# ADC mode enable , clear RAM spectre disable, continuous mode enable, reset disable
+    def unResetDES(self,param_vals):
+        self.xem.SetWireInValue(0x00, param_vals)# ADC mode disable , clear RAM spectre disable, continuous mode disable, reset disable
         self.xem.UpdateWireIns()
 
-    def start_capture(self):
-        self.xem.SetWireInValue(0x00, 0xA0000002)# ADC mode enable , clear RAM spectre disable, continuous mode enable, enable capture start
+    def start_capture(self,param_vals):
+        self.xem.SetWireInValue(0x00, param_vals)# ADC mode disable , clear RAM spectre disable, continuous mode disable, capture start,  reset enable
         self.xem.UpdateWireIns()
 
     def setwire(self):
@@ -113,7 +113,12 @@ class DESTester:
         self.xem.ReadFromPipeOut(adresse_pipe_out_read,array_pipe_out)
         return(array_pipe_out)
 
+#################################### param ######################################
 
+def param(mode_adc, reset_ram, continuous_ready, start_capture,reset):
+    param_vals = 2**31*mode_adc + 2**30*reset_ram + 2**29*continuous_ready + 2**1*start_capture + 2**0*reset
+
+    return param_vals
 
 
 #################################### Main code ######################################
@@ -125,13 +130,28 @@ if (False == des.InitializeDevice()):
 print ("------------------------------------------------------------")
 time.sleep(1)
 ################################## RESET #############################################
+
+mode_adc = 1
+reset_ram = 0
+continuous_ready  = 1
+start_capture  = 0
+reset  = 1
+
 print ("RESET")
-des.ResetDES()
+des.ResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+
 time.sleep(3)
 
 ################################## UNRESET #############################################
+
+mode_adc = 1
+reset_ram = 0
+continuous_ready = 1
+start_capture  = 0
+reset  = 0
+
 print ("unRESET")
-des.unResetDES()
+des.unResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
 
 #################################  LOAD COEF  ###################################################
 print ("Coef")
@@ -186,14 +206,17 @@ des.setwire_TH_fall()
 
 
 ###################################  START CAPTURE  ###############################################
+mode_adc = 1
+reset_ram = 0
+continuous_ready  = 1
+start_capture  = 1
+reset  = 0
 print ("start_capture")
-des.start_capture()
-
-#print("le nombre elements dans tableau est {}".format(len(list_pipe_in_array)))
+des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
 
 
 
-for c in range(20):
+for c in range(100):
 ################################### TEST fifo pipe out read pointer##############################################
     adress_wire_out_science = 0x20
     des.getwire(adress_wire_out_science)
