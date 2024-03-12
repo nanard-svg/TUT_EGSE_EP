@@ -1,7 +1,7 @@
 -- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
--- Date        : Wed Feb 28 15:44:07 2024
+-- Date        : Tue Mar 12 13:48:29 2024
 -- Host        : DESKTOP-3HC2UMC running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode funcsim
 --               c:/3Utransat/TUT_EGSE_EP/Vivado/TUT_EGSE_EP.gen/sources_1/ip/clk_wiz_0/clk_wiz_0_sim_netlist.vhdl
