@@ -30,7 +30,7 @@ end entity spectrum_FSM;
 
 architecture RTL of spectrum_FSM is
 
-    type state_type is (init_ram, detect_energy_max_ready, read_ram, write_ram, header_to_gse, first_data_to_gse, write_to_gse, last_data_to_gse, end_write_to_gse, dispatch);
+    type state_type is (init_ram, detect_energy_max_ready, read_ram, write_ram, header_to_gse, first_data_to_gse, write_to_gse, last_data_to_gse, end_write_to_gse, init_ram_work, dispatch);
     signal TM_Byte_index        : integer range 0 to 8;
     signal state                : state_type;
     signal addr                 : unsigned(9 downto 0);
@@ -93,7 +93,7 @@ begin
                     else
                         if i_ready_energy_level_max = '1' then
                             spectrum_count_pulse <= std_logic_vector(unsigned(spectrum_count_pulse) + 1);
-                            addr                 <= unsigned(i_energy_level_max(15 downto 6));
+                            addr                 <= unsigned(i_energy_level_max(14 downto 5)); -- remove MSB(15) sign bit always 0
                             o_en                 <= '1';
                             state                <= read_ram;
                         end if;
@@ -171,7 +171,8 @@ begin
                 when end_write_to_gse =>
 
                     o_pipe_out_spectrum_wr_en <= '0';
-                    state                     <= dispatch;
+                    state                     <= init_ram_work;
+                    addr                      <= (others => '1');
 
                 --                when end_to_gse =>
                 --
@@ -192,17 +193,33 @@ begin
                 --
                 --                    end case;
 
+                when init_ram_work =>
+
+                    if i_enable_erase = '1' then
+                        if To_integer(unsigned(addr)) = 0 then
+                            addr  <= To_unsigned(0, 10);
+                            state <= dispatch;
+                            o_we  <= '0';
+                            o_en  <= '0';
+                        else
+                            o_di <= (others => '0');
+                            --addr <= std_logic_vector(unsigned(addr) + to_unsigned(1, 10));
+                            addr <= (addr) - 1;
+                            o_we <= '1';
+                            o_en <= '1';
+                            --if To_integer(unsigned(o_addr)) = 65536-1 tho_en
+                        end if;
+                    else
+                        state <= dispatch;
+                    end if;
+
                 when dispatch =>
 
                     o_pipe_out_spectrum_wr_en <= '0';
 
                     if i_clk_synchro_spectrum = not (i_set_synchro_spectrum(0)) then
-                        if i_enable_erase = '1' then
-                            state <= init_ram;
-                            addr  <= (others => '1');
-                        else
-                            state <= detect_energy_max_ready;
-                        end if;
+
+                        state <= detect_energy_max_ready;
 
                     end if;
 
