@@ -33,6 +33,13 @@ array_pipe_out = np.ones(512).astype(int)
 #ma_list = list(mon_tab)
 ###############################################
 
+#################################### global setting ######################################
+
+mode_adc = 1 # set to one if ADC use
+reset_ram = 1 # set to one if clear RAM spectrum
+continuous_ready  = 1 # generally set to one set to zero if filter analysis
+start_capture  = 0
+
 #################################### CLASS ######################################
 
 class DESTester:
@@ -131,10 +138,6 @@ print ("------------------------------------------------------------")
 time.sleep(1)
 ################################## RESET #############################################
 
-mode_adc = 1
-reset_ram = 0
-continuous_ready  = 1
-start_capture  = 0
 reset  = 1
 
 print ("RESET")
@@ -144,10 +147,6 @@ time.sleep(3)
 
 ################################## UNRESET #############################################
 
-mode_adc = 1
-reset_ram = 0
-continuous_ready = 1
-start_capture  = 0
 reset  = 0
 
 print ("unRESET")
@@ -185,7 +184,7 @@ des.setpipein(list_pipe_in_array_1,adresse)
 ###################################  SET LEVEL TRIGG  ###############################################
 print ("set trigger_level")
 #level_trig=0xFFFF8EB8
-level_trig= -18000  #-29000
+level_trig= -15000  #-29000
 level_trig=int(np.uint32(level_trig))
 print(level_trig)
 des.setwire()
@@ -206,9 +205,7 @@ des.setwire_TH_fall()
 
 
 ###################################  START CAPTURE  ###############################################
-mode_adc = 1
-reset_ram = 0
-continuous_ready  = 1
+
 start_capture  = 1
 reset  = 0
 print ("start_capture")

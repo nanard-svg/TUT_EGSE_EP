@@ -35,6 +35,13 @@ list_pipe_in_array = np.ones(252).astype(int)
 #ma_list = list(mon_tab)
 ###############################################
 
+#################################### global setting ######################################
+
+mode_adc = 0 # set to one if ADC use
+reset_ram = 1 # set to one if clear RAM spectrum
+continuous_ready  = 1 # generally set to one set to zero if filter analysis
+start_capture  = 0
+
 #################################### CLASS ######################################
 
 class DESTester:
@@ -134,10 +141,6 @@ print ("------------------------------------------------------------")
 time.sleep(1)
 ################################## RESET #############################################
 
-mode_adc = 0
-reset_ram = 0
-continuous_ready  = 1
-start_capture  = 0
 reset  = 1
 
 print ("RESET")
@@ -147,10 +150,6 @@ time.sleep(3)
 
 ################################## UNRESET #############################################
 
-mode_adc = 0
-reset_ram = 0
-continuous_ready  = 1
-start_capture  = 0
 reset  = 0
 
 print ("unRESET")
@@ -210,11 +209,9 @@ des.setwire_TH_fall()
 
 
 ###################################  START CAPTURE  ###############################################
-mode_adc = 0
-reset_ram = 0
-continuous_ready  = 1
+
 start_capture  = 1
-reset  = 0
+
 print ("start_capture")
 des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
 

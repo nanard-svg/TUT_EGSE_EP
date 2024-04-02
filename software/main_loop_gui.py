@@ -2,22 +2,27 @@ import ok
 import time
 import numpy as np
 
-import tkinter as tk
+from tkinter import *
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+
+import matplotlib.pyplot as plt
 
 from tkinter import *
 from tkinter import ttk
-
+############################### classe OK
 
 array_pipe_out = np.ones(1028).astype(int)
 list_array_pipe_out_MSB = []
 list_array_pipe_out_LSB = []
+Spectre = [0 for i in range(0, 1023)]
 
 
 #################################### global setting ######################################
 
 mode_adc = 1 # set to one if ADC use
-reset_ram = 0 # set to one if clear RAM spectrum
-continuous_ready  = 0 # generally set to zero set to one if filter analysis
+reset_ram = 1 # set to one if clear RAM spectrum
+continuous_ready  = 1 # generally set to one set to zero if filter analysis
 start_capture  = 0
 
 #################################### CLASS ######################################
@@ -113,29 +118,29 @@ def pathname1():
     u = racine.winfo_pathname(i, False)
     print("pathname", u)
 
-def delay_end():
-    racine.after(100,delay_end)
+def delay_end(fig):
+    racine.after(200, lambda:delay_end(fig))
     #print("delay_end")
     #print("############## read pointer spectrum filter 0 #####################")
     adress_wire_out_science = 0x21  # filter 0
     des.getwire(adress_wire_out_science)
-    #print("read pointer spectrum filter 0 : {}".format(get))
+
     if get == 1028 :
         print("read pointer spectrum filter 0 : {}".format(get))
-        print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
+        #print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
         adresse_pipe_out_read=0xA2         #filter0
         #adresse_pipe_out_read = 0xA4        #filter1
         des.getpipeout(adresse_pipe_out_read)
         list_array_pipe_out = list(array_pipe_out)
 
-        print("################################ HEADER spectrum filter 0 #############################################")
-        print("Number Filter and Index Ram Spectrum : {}".format(tohex(list_array_pipe_out[0],32)))
-        print(type(list_array_pipe_out[0]))
-        print("TIME MSB : {}".format(tohex(list_array_pipe_out[1],32)))
-        print("TIME  : {}".format(tohex(list_array_pipe_out[2],32)))
-        print("TIME LSB  : {}".format(tohex(list_array_pipe_out[3],32)))
+        #print("################################ HEADER spectrum filter 0 #############################################")
+        #print("Number Filter and Index Ram Spectrum : {}".format(tohex(list_array_pipe_out[0],32)))
+        #print(type(list_array_pipe_out[0]))
+        #print("TIME MSB : {}".format(tohex(list_array_pipe_out[1],32)))
+        #print("TIME  : {}".format(tohex(list_array_pipe_out[2],32)))
+        #print("TIME LSB  : {}".format(tohex(list_array_pipe_out[3],32)))
 
-        print("################################ DATA of  spectrum filter 0 #############################################")
+        #print("################################ DATA of  spectrum filter 0 #############################################")
         for elm in list_array_pipe_out[4:] :
             #print(type(elm))
             #list_array_pipe_out_MSB.append(int(elm/2**16))
@@ -145,6 +150,18 @@ def delay_end():
                 #print("energy : {}".format(np.short(elm & 0xFFFF)))
             if (np.short(elm & 0xFFFF)) != 0 :
                 print("spectrum",tohex(elm,32))
+
+                # Construction du spectre
+                add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
+                data = (elm & 0xFFFF)  # Ajout GO
+                Spectre[add] = Spectre[add] + data  # Ajout GO
+
+                fig.axes[0].set_ylim((min(Spectre), max(Spectre)))
+                fig.axes[0].lines[0].set_ydata(Spectre)
+                #racine.update()
+                canvas.draw_idle()
+
+                list_array_pipe_out = np.linspace(0, 1027, 1028).astype(int)
 
         adress_wire_out_science = 0x25
         des.getwire(adress_wire_out_science)
@@ -169,12 +186,18 @@ def param(mode_adc, reset_ram, continuous_ready, start_capture,reset):
 
 def Reset_unreset() :
 
+    mode_adc = 1  # set to one if ADC use
+    reset_ram = 1  # set to one if clear RAM spectrum
+    continuous_ready = 1  # generally set to one set to zero if filter analysis
+    start_capture = 0
+    reset = 1
     print("RESET")
-    des.ResetDES()
-    time.sleep(3)
-    ################################## UNRESET #############################################
+    des.ResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+    time.sleep(2)
+    reset = 0
     print("unRESET")
-    des.unResetDES()
+    des.unResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+    start_capture = 1
 
 def InitializeDevice() :
     print("------ DES Encrypt/Decrypt Tester in Python ------")
@@ -183,7 +206,23 @@ def InitializeDevice() :
         exit
     print("------------------------------------------------------------")
 
+def close() :
+    print("button Close")
+    des.Close
+    print("exit")
+    racine.destroy()
+
+
 def Injection() :
+
+    mode_adc = 0  # set to one if ADC use
+    #reset_ram = 1  # set to one if clear RAM spectrum
+    #continuous_ready = 0  # generally set to zero set to one if filter analysis
+    #start_capture = 1
+
+    print("injection")
+    des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+
     file_name = open('Signal_ADC_20keV.txt', "r")
     lines = file_name.readlines()
     formated_lines = []
@@ -204,6 +243,16 @@ def Injection() :
     adresse = 0x80
     des.setpipein(list_pipe_in_array, adresse)
 
+def ADC() :
+
+    mode_adc = 1  # set to one if ADC use
+    #reset_ram = 1  # set to one if clear RAM spectrum
+    #continuous_ready = 0  # generally set to zero set to one if filter analysis
+    #start_capture = 1
+
+    print("ADC")
+    des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+
 def get_entry_TH(event) :
     valeur = v.get()
     print("get_entry_TH:",valeur)
@@ -219,22 +268,44 @@ def get_entry_TL(event) :
     print(TH_fall)
 
 
-racine = tk.Tk() #fait apparaitre fenetre principale
+racine = Tk() #fait apparaitre fenetre principale
 
-############################### classe OK
 des = DESTester()
+
+
+# the figure that will contain the plot
+fig = Figure(figsize=(5, 5),dpi=100)
+
+# adding the subplot
+plot1 = fig.add_subplot(111)
+
+# creating the Tkinter canvas
+# containing the Matplotlib figure
+canvas = FigureCanvasTkAgg(fig,master=racine)
+canvas.draw()
+
+# placing the canvas on the Tkinter window
+canvas.get_tk_widget().pack()
+
+# creating the Matplotlib toolbar
+toolbar = NavigationToolbar2Tk(canvas,racine)
+
+toolbar.update()
 
 racine.geometry("600x600+500+500")
 racine.pack_propagate(0)
-racine.title("Main_win")
+racine.title("Main_Win_GSE_3UT")
 label = Label(racine, text="GSE GUI 3UT")
 label.pack()
 
-b5 = Button(racine, text="RESET", command=Reset_unreset,name="b5") # BOUTON reset
-b5.pack()
-
-b6 = Button(racine, text="Injection", command=Injection,name="b5") # BOUTON Injection
+#b5 = Button(racine, text="RESET", command=Reset_unreset,name="b5") # BOUTON reset
+b6 = Button(racine, text="Injection", command=Injection,name="b6") # BOUTON Injection
+b7 = Button(racine, text="ADC", command=ADC,name="b7") # BOUTON Injection
+b8 = Button(racine, text="Close Opal Kelly", command=close,name="b8") # BOUTON Injection
+#b5.pack()
+b7.pack()
 b6.pack()
+b8.pack()
 
 label = Label(racine, text="get_entry_TH")
 v = Entry( racine, text="get_entry_TH", bd = 5 )
@@ -306,14 +377,14 @@ des.setwire()
 
 print ("set trigger_TH_rise")
 #level_trig=0xFFFF8EB8
-TH_rise=200
+TH_rise=2000
 TH_rise=int(np.uint32(TH_rise))
 print(TH_rise)
 des.setwire_TH_rise(TH_rise)
 
 print ("set trigger_TH_fall")
 #level_trig=0xFFFF8EB8
-TH_fall=200
+TH_fall=2000
 TH_fall=int(np.uint32(TH_fall))
 print(TH_fall)
 des.setwire_TH_fall(TH_fall)
@@ -322,13 +393,16 @@ des.setwire_TH_fall(TH_fall)
 ###################################  START CAPTURE  ###############################################
 
 start_capture  = 1
+reset_ram = 1 # set to one if clear RAM spectrum
 
 print ("start_capture")
 des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
 
 ###################################  IRQ time  ###############################################
 
-delay_end()
+fig.axes[0].plot(Spectre)  #Axes class represents one (sub-)plot in a figure
+
+delay_end(fig)
 
 ##################################  MAIN GUI ###################################################
 racine.mainloop()
