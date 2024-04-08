@@ -90,6 +90,12 @@ architecture simulate of sim_tf is
     --------------------------------------------------------------------------
 begin
 
+    ----------------------------------------------------------------------------------------------
+    --
+    -- Reset
+    --
+    ----------------------------------------------------------------------------------------------
+
     Reset <= '1', '0' after 100 ns;
 
     inst_DUT : TUT_EGSE
@@ -110,7 +116,7 @@ begin
 
     ---------------------------------------------------------------------------------------------------------------------------------
     --
-    -- AD7982_Emulators emul
+    -- AD7982_Emulators Emulators
     --
     ------------------------------------------------------------------------------------------------------
 
@@ -153,12 +159,6 @@ begin
     end process sys_clk_gen;
     -- Simulation Process
 
-    ----------------------------------------------------------------------------------------------
-    --
-    -- Reset
-    --
-    ----------------------------------------------------------------------------------------------
-
     label_read_file_injection : process
         ------------------------------------------------------------------
 
@@ -169,7 +169,7 @@ begin
         -------------------------------------------------------------------
 
     begin                               -------------begin of process-----
-        file_open(DONNEES, "Signal_ADC.txt", read_mode);
+        file_open(DONNEES, "Signal_ADC_injection.txt", read_mode);
         --ep_write  <= '0';
         --ep_dataout    <= (others => '0');
         i_signal         := 0;
@@ -1042,7 +1042,7 @@ begin
         SetWireInValue(x"03", x"0000_0100", NO_MASK); -- set TH_fall
         UpdateWireIns;
 
-        SetWireInValue(x"00", x"0000_0002", NO_MASK); -- start capture and unReset all design 
+        SetWireInValue(x"00", x"E000_0002", NO_MASK); -- start capture and unReset all design 
         UpdateWireIns;
 
         wait for 500 us;
@@ -1056,9 +1056,12 @@ begin
 
         wait for 2000 us;
 
-        ReadFromPipeOut(x"A1", 220*4);	-- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
-		ReadFromPipeOut(x"A3", 220*4);	-- read on pipe out
+        --ReadFromPipeOut(x"A3", 1024 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
 
         wait for 500 us;
@@ -1072,7 +1075,12 @@ begin
 
         wait for 2000 us;
 
-        ReadFromPipeOut(x"A1", 220*4);	-- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        --Check_PipeOut(MODE_LFSR);
+        --ReadFromPipeOut(x"A3", 1024 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
 
 
@@ -1083,4 +1091,5 @@ begin
         --	Check_Registers;
 
     end process;
+
 end simulate;
