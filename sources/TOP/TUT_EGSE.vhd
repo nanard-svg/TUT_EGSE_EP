@@ -56,6 +56,9 @@ architecture arch of TUT_EGSE is
     signal reset : std_logic;
     signal count : unsigned(31 downto 0);
 
+    signal count_synchro_spectrum : unsigned(26 downto 0);
+    signal clk_synchro_spectrum   : std_logic;
+
     -- pipe in
 
     signal pipe_in_injection_din_fifo   : STD_LOGIC_VECTOR(31 downto 0);
@@ -208,6 +211,24 @@ begin
         );
 
     ------------------------------------------
+    -- Cycle spectrum
+    ------------------------------------------
+
+    label_Cycle_spectrum : process(sys_clk, reset) is
+    begin
+        if reset = '1' then
+            count_synchro_spectrum <= (others => '0');
+            clk_synchro_spectrum   <= '0';
+        elsif rising_edge(sys_clk) then
+            count_synchro_spectrum <= count_synchro_spectrum + 1;
+            if To_integer(count_synchro_spectrum) = 10000000 then
+                clk_synchro_spectrum   <= not clk_synchro_spectrum;
+                count_synchro_spectrum <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    ------------------------------------------
     --  global conf
     ------------------------------------------
 
@@ -326,9 +347,12 @@ begin
     generate_EP : for N IN 1 downto 0 generate
         label_Ep : entity work.EP
             port map(
+                -- global
                 i_clk_slow                => sys_clk,
                 i_clk_fast                => clk_60Mhz,
                 i_reset                   => reset,
+                -- global select spectrum
+                i_clk_synchro_spectrum    => clk_synchro_spectrum,
                 i_filter_number           => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
                 i_TH_rise                 => TH_rise,
@@ -378,7 +402,7 @@ begin
                 i_clk_slow                     => sys_clk,
                 i_reset                        => reset,
                 --remote FSM raw data
-                i_continuous_injection      => continuous_injection,
+                i_continuous_injection         => continuous_injection,
                 i_level_trigger                => i_level_trigger(N),
                 i_Start_Capture                => i_Start_Capture(N),
                 --input
@@ -563,5 +587,13 @@ begin
     epA3 : okPipeOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"A3", ep_read => rd_en_fifo_pipe_out_raw_data(1), ep_datain => dout_fifo_pipe_out_raw_data(1));
     --  pipe out spectrum
     epA4 : okPipeOut port map(okHE => okHE, okEH => okEHx(13 * 65 - 1 downto 12 * 65), ep_addr => x"A4", ep_read => pipe_out_spectrum_rd_en(1), ep_datain => pipe_out_spectrum_dout(1));
+
+    ------------------------------------------
+    -- ALL
+    ------------------------------------------
+    --  read wire out for FIFO pipe out science.
+    --ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"26", ep_datain => ep26wire;
+    --  pipe out spectrum
+    --epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(15 * 65 - 1 downto 14 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_all_rd_en, ep_datain => pipe_out_spectrum_all_dout;
 
 end arch;

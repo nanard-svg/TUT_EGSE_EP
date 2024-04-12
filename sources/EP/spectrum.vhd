@@ -4,8 +4,11 @@ use ieee.numeric_std.all;
 
 entity spectrum is
     port(
+        -- global
         i_clk_slow                : in  std_logic;
         i_reset                   : in  std_logic;
+        -- global select spectrum
+        i_clk_synchro_spectrum    : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         -- input from detect Energy level
         i_enable_erase            : in  std_logic;
@@ -30,35 +33,15 @@ architecture RTL of spectrum is
     signal we   : std_logic_vector(1 downto 0);
     signal en   : std_logic_vector(1 downto 0);
 
-    signal count                : unsigned(26 downto 0);
-    signal clk_synchro_spectrum : std_logic;
     --signal stamp : unsigned(15 downto 0);
 
     -- out spectrum to fifo pipe out
     type Array_din_type is array (1 downto 0) of std_logic_vector(31 downto 0);
-    signal pipe_out_spectrum_din   : Array_din_type;
-    signal pipe_out_spectrum_wr_en : std_logic_vector(1 downto 0);
-    signal spectrum_pulse_by_filter        : Array_din_type;
+    signal pipe_out_spectrum_din    : Array_din_type;
+    signal pipe_out_spectrum_wr_en  : std_logic_vector(1 downto 0);
+    signal spectrum_pulse_by_filter : Array_din_type;
 
 begin
-
-    ------------------------------------------
-    -- Cycle spectrum
-    ------------------------------------------
-
-    label_Cycle_spectrum : process(i_clk_slow, i_reset) is
-    begin
-        if i_reset = '1' then
-            count                <= (others => '0');
-            clk_synchro_spectrum <= '0';
-        elsif rising_edge(i_clk_slow) then
-            count <= count + 1;
-            if To_integer(count) = 10000000 then
-                clk_synchro_spectrum <= not clk_synchro_spectrum;
-                count                <= (others => '0');
-            end if;
-        end if;
-    end process;
 
     ------------------------------------------
     -- Single-Port Block RAM No-Change Mode
@@ -89,9 +72,9 @@ begin
                 -- global
                 i_clk_slow                => i_clk_slow,
                 i_reset                   => i_reset,
-                i_filter_number           => i_filter_number, 
+                i_filter_number           => i_filter_number,
                 -- synchro_spectrum
-                i_clk_synchro_spectrum    => clk_synchro_spectrum,
+                i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
                 i_set_synchro_spectrum    => std_logic_vector(To_unsigned(N, 1)),
                 i_enable_erase            => i_enable_erase,
                 -- RAM
@@ -110,8 +93,8 @@ begin
             );
     end generate generate_label_spectrum_FSM;
 
-    o_pipe_out_spectrum_din   <= pipe_out_spectrum_din(0) when clk_synchro_spectrum = '0' else pipe_out_spectrum_din(1);
-    o_pipe_out_spectrum_wr_en <= pipe_out_spectrum_wr_en(0) when clk_synchro_spectrum = '0' else pipe_out_spectrum_wr_en(1);
+    o_pipe_out_spectrum_din   <= pipe_out_spectrum_din(0) when i_clk_synchro_spectrum = '0' else pipe_out_spectrum_din(1);
+    o_pipe_out_spectrum_wr_en <= pipe_out_spectrum_wr_en(0) when i_clk_synchro_spectrum = '0' else pipe_out_spectrum_wr_en(1);
 
     ------------------------------------------
     -- Cycle spectrum_pulse
@@ -120,9 +103,9 @@ begin
     label_Cycle_spectrum_pulse : process(i_clk_slow, i_reset) is
     begin
         if i_reset = '1' then
-        o_spectrum_count_pulse <= (others => '0');
+            o_spectrum_count_pulse <= (others => '0');
         elsif rising_edge(i_clk_slow) then
-        o_spectrum_count_pulse <= std_logic_vector(unsigned(spectrum_pulse_by_filter(0))+unsigned(spectrum_pulse_by_filter(1)));
+            o_spectrum_count_pulse <= std_logic_vector(unsigned(spectrum_pulse_by_filter(0)) + unsigned(spectrum_pulse_by_filter(1)));
         end if;
     end process;
 

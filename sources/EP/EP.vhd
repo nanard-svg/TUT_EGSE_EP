@@ -10,6 +10,8 @@ entity EP is
         i_clk_slow                : in  std_logic;
         i_clk_fast                : in  std_logic;
         i_reset                   : in  std_logic;
+        -- global select spectrum
+        i_clk_synchro_spectrum    : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         --input param
         i_TH_rise                 : in  std_logic_vector(31 downto 0);
@@ -106,7 +108,9 @@ begin
             -- global
             i_clk_slow                => i_clk_slow,
             i_reset                   => i_reset,
-            i_filter_number           => i_filter_number, 
+            -- global select spectrum
+            i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
+            i_filter_number           => i_filter_number,
             -- input from detect Energy level
             i_enable_erase            => i_enable_erase,
             i_Energy_level_max        => Energy_level_max,
