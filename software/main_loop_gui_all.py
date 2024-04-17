@@ -1,6 +1,7 @@
 import ok
 import time
 import numpy as np
+import math
 
 from tkinter import *
 from matplotlib.figure import Figure
@@ -98,6 +99,16 @@ class DESTester:
     def setwire_TH_fall(self,TH_fall):
 
         self.xem.SetWireInValue(0x03, TH_fall)
+        self.xem.UpdateWireIns()
+
+    def setwire_gain_filtre0(self,gain_filtre0):
+
+        self.xem.SetWireInValue(0x04, gain_filtre0)
+        self.xem.UpdateWireIns()
+
+    def setwire_gain_filtre1(self,gain_filtre1):
+
+        self.xem.SetWireInValue(0x05, gain_filtre1)
         self.xem.UpdateWireIns()
 
     def getwire(self,adress_wire_out_science):
@@ -314,6 +325,19 @@ def get_entry_TL(event) :
     des.setwire_TH_fall(TH_fall)
     print(TH_fall)
 
+def get_gain_filtre0(event) :
+    valeur = v2.get()
+    print("get_gain_filtre0:",valeur)
+    gain_filtre0 = int(math.log2(int(valeur)))
+    des.setwire_gain_filtre0(gain_filtre0)
+    print(gain_filtre0)
+
+def get_gain_filtre1(event) :
+    valeur = v3.get()
+    print("get_gain_filtre1:",valeur)
+    gain_filtre1 = int(math.log2(int(valeur)))
+    des.setwire_gain_filtre1(gain_filtre1)
+    print(gain_filtre1)
 
 racine = Tk() #fait apparaitre fenetre principale
 
@@ -348,11 +372,11 @@ label.pack()
 #b5 = Button(racine, text="RESET", command=Reset_unreset,name="b5") # BOUTON reset
 b6 = Button(racine, text="Injection", command=Injection,name="b6") # BOUTON Injection
 b7 = Button(racine, text="ADC", command=ADC,name="b7") # BOUTON Injection
-b8 = Button(racine, text="Close Opal Kelly", command=close,name="b8") # BOUTON Injection
+#b8 = Button(racine, text="Close Opal Kelly", command=close,name="b8") # BOUTON Injection
 #b5.pack()
 b7.pack()
 b6.pack()
-b8.pack()
+#b8.pack()
 
 label = Label(racine, text="get_entry_TH")
 v = Entry( racine, text="get_entry_TH", bd = 5 )
@@ -365,6 +389,18 @@ v1 = Entry( racine, text="get_entry_TL", bd = 5 )
 label.pack()
 v1.pack()  # pack l'ojb à gui
 v1.bind('<Return>', get_entry_TL)
+
+label = Label(racine, text="get_gain_filtre0")
+v2 = Entry( racine, text="get_gain_filtre0", bd = 5 )
+label.pack()
+v2.pack()  # pack l'ojb à gui
+v2.bind('<Return>', get_gain_filtre0)
+
+label = Label(racine, text="get_gain_filtre1")
+v3 = Entry( racine, text="get_gain_filtre1", bd = 5 )
+label.pack()
+v3.pack()  # pack l'ojb à gui
+v3.bind('<Return>', get_gain_filtre1)
 
 ############################### Init OK et Reset before GUI
 InitializeDevice()
@@ -436,6 +472,17 @@ TH_fall=int(np.uint32(TH_fall))
 print(TH_fall)
 des.setwire_TH_fall(TH_fall)
 
+valeur = 1
+print("get_gain_filtre0:", valeur)
+gain_filtre0 = int(math.log2(int(valeur)))
+des.setwire_gain_filtre0(gain_filtre0)
+print(gain_filtre0)
+
+valeur = 1
+print("get_gain_filtre1:", valeur)
+gain_filtre1 = int(math.log2(int(valeur)))
+des.setwire_gain_filtre0(gain_filtre1)
+print(gain_filtre0)
 
 ###################################  START CAPTURE  ###############################################
 

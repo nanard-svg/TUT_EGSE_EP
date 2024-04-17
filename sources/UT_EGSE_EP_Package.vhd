@@ -17,6 +17,7 @@ type Array_config_32stdx2_type is array (1 downto 0) of std_logic_vector(31 down
 type Array_config_11stdx2_type is array (1 downto 0) of std_logic_vector(10 downto 0);
 type Array_config_10stdx2_type is array (1 downto 0) of std_logic_vector(9 downto 0); 
 type Array_config_16signedx2_type is array (1 downto 0) of signed(15 downto 0);  
- 
+
+type Array_config_32unsignedx2_type is array (1 downto 0) of signed(31 downto 0);
  
 end package UT_EGSE_EP_Package;

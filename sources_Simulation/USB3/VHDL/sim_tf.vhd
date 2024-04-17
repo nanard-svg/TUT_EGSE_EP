@@ -1041,6 +1041,14 @@ begin
         -- apply all
         SetWireInValue(x"03", x"0000_0100", NO_MASK); -- set TH_fall
         UpdateWireIns;
+        
+        -- apply all
+        SetWireInValue(x"04", x"0000_0000", NO_MASK); -- gain filter 0
+        UpdateWireIns;
+        
+        -- apply all
+        SetWireInValue(x"05", x"0000_0002", NO_MASK); -- gain filter 1
+        UpdateWireIns;
 
         SetWireInValue(x"00", x"E000_0002", NO_MASK); -- start capture and unReset all design 
         UpdateWireIns;

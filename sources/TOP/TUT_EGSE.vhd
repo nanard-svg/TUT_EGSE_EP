@@ -90,8 +90,8 @@ architecture arch of TUT_EGSE is
     signal clk_60Mhz : STD_LOGIC;
 
     signal data_before_filter           : Array_config_16signedx2_type;
-    signal data_after_filter            : Array_config_16signedx2_type;
-    signal ready_after_filter           : STD_LOGIC_VECTOR(1 downto 0);
+    
+    signal ready_after_gain           : STD_LOGIC_VECTOR(1 downto 0);
     signal wr_en_fifo_pipe_out_raw_data : STD_LOGIC_VECTOR(1 downto 0);
     signal i_Start_Capture              : STD_LOGIC_VECTOR(1 downto 0);
     signal i_level_trigger              : STD_LOGIC_VECTOR(1 downto 0);
@@ -130,6 +130,9 @@ architecture arch of TUT_EGSE is
     signal din_fifo_raw_data            : Array_config_32signedx2_type;
     signal injection_started            : std_logic;
     signal continuous_injection         : std_logic;
+    signal gain                         : Array_config_32stdx2_type;
+    signal data_after_gain              : Array_config_16signedx2_type;         
+    
 
     --signal ep23wire : std_logic_vector(31 downto 0);
     --signal ep24wire : std_logic_vector(31 downto 0);
@@ -355,6 +358,7 @@ begin
                 i_clk_synchro_spectrum    => clk_synchro_spectrum,
                 i_filter_number           => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
+                i_gain                    => unsigned(gain(N)),
                 i_TH_rise                 => TH_rise,
                 i_TH_fall                 => TH_fall,
                 i_enable_erase            => enable_erase,
@@ -362,8 +366,8 @@ begin
                 i_ready_CDC               => i_ready_CDC,
                 i_data_CDC                => i_data_CDC,
                 -- out view 
-                o_data_after_filter       => data_after_filter(N),
-                o_ready_after_filter      => ready_after_filter(N),
+                o_data_after_gain         => data_after_gain(N),
+                o_ready_after_gain        => ready_after_gain(N),
                 -- input coef filter
                 i_coef_fir                => coef_fir(N),
                 i_coef_fir_ready          => coef_fir_ready(N),
@@ -407,7 +411,7 @@ begin
                 i_Start_Capture                => i_Start_Capture(N),
                 --input
                 i_din_fifo_raw_data            => din_fifo_raw_data(N),
-                i_ready                        => ready_after_filter(N),
+                i_ready                        => ready_after_gain(N),
                 --output
                 o_din_fifo_pipe_out_raw_data   => din_fifo_pipe_out_raw_data(N),
                 o_wr_en_fifo_pipe_out_raw_data => wr_en_fifo_pipe_out_raw_data(N),
@@ -416,7 +420,7 @@ begin
     end generate generate_label_FSM_raw_data;
 
     generate_din_fifo_raw_data : for N IN 1 downto 0 generate
-        label_din_fifo_raw_data : din_fifo_raw_data(N) <= data_after_filter(N) & data_before_filter(N);
+        label_din_fifo_raw_data : din_fifo_raw_data(N) <= data_after_gain(N) & data_before_filter(N);
     end generate generate_din_fifo_raw_data;
 
     ------------------------------------------
@@ -535,6 +539,7 @@ begin
                 ep22wire(N) <= spectrum_count_pulse(N);
                 --ep23wire <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(1);
                 --ep24wire <= "000000000000000000000" & pipe_out_rd_data_count_spectrum(1);
+
             end if;
         end process;
     end generate generate_label_process_inter_wire;
@@ -555,6 +560,10 @@ begin
     ep02 : okWireIn port map(okHE => okHE, ep_addr => x"02", ep_dataout => TH_rise);
     --  level TH_fall
     ep03 : okWireIn port map(okHE => okHE, ep_addr => x"03", ep_dataout => TH_fall);
+    --  level gain
+    ep04 : okWireIn port map(okHE => okHE, ep_addr => x"04", ep_dataout => gain(0));
+    --  level gain
+    ep05 : okWireIn port map(okHE => okHE, ep_addr => x"05", ep_dataout => gain(1));
 
     --  read wire out for FIFO pipe out science.
     ep20 : okWireOut port map(okHE => okHE, okEH => okEHx(1 * 65 - 1 downto 0 * 65), ep_addr => x"20", ep_datain => ep20wire(0));

@@ -14,6 +14,7 @@ entity EP is
         i_clk_synchro_spectrum    : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         --input param
+        i_gain                    : in  unsigned(31 downto 0);
         i_TH_rise                 : in  std_logic_vector(31 downto 0);
         i_TH_fall                 : in  std_logic_vector(31 downto 0);
         i_enable_erase            : in  std_logic;
@@ -21,8 +22,8 @@ entity EP is
         i_ready_CDC               : in  std_logic;
         i_data_CDC                : in  signed(15 downto 0);
         -- out
-        o_data_after_filter       : out signed(15 downto 0);
-        o_ready_after_filter      : out std_logic;
+        o_data_after_gain         : out signed(15 downto 0);
+        o_ready_after_gain        : out std_logic;
         --coef
         i_coef_fir                : in  Array_config_32x16_type;
         i_coef_fir_ready          : in  std_logic;
@@ -41,6 +42,10 @@ architecture RTL of EP is
     signal data_after_filter     : signed(15 downto 0);
     signal Energy_level_max      : signed(15 downto 0);
     signal readyEnergy_level_max : std_logic;
+
+    signal ready_after_filter : std_logic;
+    signal data_after_gain    : signed(15 downto 0);
+    signal ready_after_gain   : std_logic;
 
 begin
 
@@ -78,11 +83,34 @@ begin
             i_ready          => ready_before_filter,
             --out
             o_data           => data_after_filter,
-            o_ready          => o_ready_after_filter
+            o_ready          => ready_after_filter
         );
 
     o_data_before_filter <= data_before_filter;
-    o_data_after_filter  <= data_after_filter;
+    --o_data_after_filter  <= data_after_filter;
+    --o_ready_after_filter <= ready_after_filter;
+
+    ------------------------------------------
+    --  Gain
+    ------------------------------------------
+
+    label_gain : entity work.gain
+        port map(
+            -- global
+            i_clk_slow           => i_clk_slow,
+            i_reset              => i_reset,
+            -- input gain
+            i_gain               => i_gain,
+            -- input data
+            i_data_after_filter  => data_after_filter,
+            i_ready_after_filter => ready_after_filter,
+            -- output data
+            o_data_after_gain    => data_after_gain,
+            o_ready_after_gain   => ready_after_gain
+        );
+
+    o_data_after_gain  <= data_after_gain;
+    o_ready_after_gain <= ready_after_gain;
 
     ------------------------------------------
     --  Energy level
@@ -92,7 +120,7 @@ begin
         port map(
             i_clk_slow              => i_clk_slow,
             i_reset                 => i_reset,
-            i_data_after_filter     => data_after_filter,
+            i_data_after_filter     => data_after_gain,
             i_TH_rise               => i_TH_rise,
             i_TH_fall               => i_TH_fall,
             o_Energy_level_max      => Energy_level_max,
