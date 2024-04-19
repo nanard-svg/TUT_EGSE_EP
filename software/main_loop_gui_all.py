@@ -3,14 +3,20 @@ import time
 import numpy as np
 import math
 
-from tkinter import *
+import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 import matplotlib.pyplot as plt
 
-from tkinter import *
-from tkinter import ttk
+init_spectrum = False
+
+def clr_graph() :
+    global init_spectrum
+    init_spectrum = True
+    # tk.messagebox.showinfo("showinfo", "init_spectrum = {}".format(init_spectrum))
+
+
 ############################### classe OK
 
 array_pipe_out = np.ones(1028).astype(int)
@@ -127,13 +133,16 @@ def tohex(val, nbits):
   return hex((val + (1 << nbits)) % (1 << nbits))
 
 def pathname1():
-    i = b4.winfo_id()
+    i = tk.b4.winfo_id()
     print("identité", i)
     u = racine.winfo_pathname(i, False)
     print("pathname", u)
 
 def delay_end(fig):
 
+    global init_spectrum
+    global Spectre
+    global Spectre1
 
     racine.after(200, lambda:delay_end(fig))
     #print("delay_end")
@@ -199,6 +208,13 @@ def delay_end(fig):
                     # Spectre1[add] = data
 
         # racine.bind("<BackSpace>",  clear_vect())
+
+        if init_spectrum == True :
+
+            Spectre = [0 for i in range(0, 1023)]
+            Spectre1 = [0 for i in range(0, 1023)]
+            init_spectrum = False
+            # tk.messagebox.showinfo("showinfo", "init_spectrum = {}".format(init_spectrum))
 
         min_1 = min(Spectre)
         min_2 = min(Spectre1)
@@ -339,7 +355,7 @@ def get_gain_filtre1(event) :
     des.setwire_gain_filtre1(gain_filtre1)
     print(gain_filtre1)
 
-racine = Tk() #fait apparaitre fenetre principale
+racine = tk.Tk() #fait apparaitre fenetre principale
 
 des = DESTester()
 
@@ -366,38 +382,38 @@ toolbar.update()
 racine.geometry("600x600+500+500")
 racine.pack_propagate(0)
 racine.title("Main_Win_GSE_3UT")
-label = Label(racine, text="GSE GUI 3UT")
+label = tk.Label(racine, text="GSE GUI 3UT")
 label.pack()
 
 #b5 = Button(racine, text="RESET", command=Reset_unreset,name="b5") # BOUTON reset
-b6 = Button(racine, text="Injection", command=Injection,name="b6") # BOUTON Injection
-b7 = Button(racine, text="ADC", command=ADC,name="b7") # BOUTON Injection
+b6 = tk.Button(racine, text="Injection", command=Injection,name="b6") # BOUTON Injection
+b7 = tk.Button(racine, text="ADC", command=ADC,name="b7") # BOUTON Injection
 #b8 = Button(racine, text="Close Opal Kelly", command=close,name="b8") # BOUTON Injection
 #b5.pack()
 b7.pack()
 b6.pack()
 #b8.pack()
 
-label = Label(racine, text="get_entry_TH")
-v = Entry( racine, text="get_entry_TH", bd = 5 )
+label = tk.Label(racine, text="level pulse rising : 1->1024")
+v = tk.Entry( racine, text="get_entry_TH", bd = 5 )
 label.pack()
 v.pack()  # pack l'ojb à gui
 v.bind('<Return>', get_entry_TH)
 
-label = Label(racine, text="get_entry_TL")
-v1 = Entry( racine, text="get_entry_TL", bd = 5 )
+label = tk.Label(racine, text="level pulse falling < level pulse rising  : 1->1024")
+v1 = tk.Entry( racine, text="get_entry_TL", bd = 5 )
 label.pack()
 v1.pack()  # pack l'ojb à gui
 v1.bind('<Return>', get_entry_TL)
 
-label = Label(racine, text="get_gain_filtre0")
-v2 = Entry( racine, text="get_gain_filtre0", bd = 5 )
+label = tk.Label(racine, text="Gain FIR 1 : 1 -> ~32")
+v2 = tk.Entry( racine, text="get_gain_filtre0", bd = 5 )
 label.pack()
 v2.pack()  # pack l'ojb à gui
 v2.bind('<Return>', get_gain_filtre0)
 
-label = Label(racine, text="get_gain_filtre1")
-v3 = Entry( racine, text="get_gain_filtre1", bd = 5 )
+label = tk.Label(racine, text="Gain FIR 2 : 1 -> ~32")
+v3 = tk.Entry( racine, text="get_gain_filtre1", bd = 5 )
 label.pack()
 v3.pack()  # pack l'ojb à gui
 v3.bind('<Return>', get_gain_filtre1)
@@ -508,6 +524,7 @@ delay_end(fig)
 
 racine.protocol(name="WM_DELETE_WINDOW", func = lambda : close())
 racine.bind("<Escape>", lambda e : close())
+racine.bind("<Delete>", lambda cl : clr_graph())
 # racine.bind("<BackSpace>", lambda cl : clear_graph())
 ##################################  MAIN GUI ###################################################
 racine.mainloop()
