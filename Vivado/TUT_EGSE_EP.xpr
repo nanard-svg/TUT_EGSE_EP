@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="61" Path="C:/3Utransat/TUT_EGSE_EP/Vivado/TUT_EGSE_EP.xpr">
+<Project Version="7" Minor="61" Path="C:/3Utransat/TUT_EGSE_EP_checkout/Vivado/TUT_EGSE_EP.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="589934dcc2fa432b9dcb27e6df997b97"/>
@@ -144,12 +144,6 @@
         </FileInfo>
       </File>
       <File Path="$PPRDIR/../sources/EP/Energy_level.vhd">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../sources/EP/rams_sp_nc.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -298,7 +292,7 @@
       <File Path="$PPRDIR/../sources_Simulation/file/Signal_ADC.txt"/>
       <File Path="$PPRDIR/../sources_Simulation/file/coef_HEX_V2.txt"/>
       <File Path="$PPRDIR/../sources_Simulation/file/coef_HEX_V2_1.txt"/>
-      <File Path="$PPRDIR/sim_tf_behav.wcfg">
+      <File Path="$PPRDIR/../../TUT_EGSE_EP/Vivado/sim_tf_behav.wcfg">
         <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
@@ -317,9 +311,9 @@
         <Option Name="PamSignalDriverFile" Val="xil_bypass_driver"/>
         <Option Name="PamPseudoTop" Val="pseudo_tb"/>
         <Option Name="SrcSet" Val="sources_1"/>
-        <Option Name="XSimWcfgFile" Val="$PPRDIR/sim_tf_behav.wcfg"/>
-        <Option Name="XSimWcfgFile" Val="$PPRDIR/sim_tf_behav.wcfg"/>
-        <Option Name="XSimWcfgFile" Val="$PPRDIR/sim_tf_behav.wcfg"/>
+        <Option Name="XSimWcfgFile" Val="$PPRDIR/../../TUT_EGSE_EP/Vivado/sim_tf_behav.wcfg"/>
+        <Option Name="XSimWcfgFile" Val="$PPRDIR/../../TUT_EGSE_EP/Vivado/sim_tf_behav.wcfg"/>
+        <Option Name="XSimWcfgFile" Val="$PPRDIR/../../TUT_EGSE_EP/Vivado/sim_tf_behav.wcfg"/>
         <Option Name="NLNetlistMode" Val="funcsim"/>
       </Config>
     </FileSet>
