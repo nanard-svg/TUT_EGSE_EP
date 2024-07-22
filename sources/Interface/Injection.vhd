@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity Injection is
     port(
         reset                  : in  std_logic;
-        clk_60Mhz              : in  std_logic;
+        i_clk_fast              : in  std_logic;
         --fifo
         i_continuous_injection : in  std_logic;
         o_pipe_in_rd_en        : out std_logic;
@@ -30,7 +30,7 @@ architecture RTL of Injection is
 
 begin
 
-    label_process_Injection : process(clk_60Mhz, reset) is
+    label_process_Injection : process(i_clk_fast, reset) is
     begin
         if reset = '1' then
             state <= wait_sampling_time;
@@ -45,7 +45,7 @@ begin
             wait_one_cycle      <= '0';
             o_injection_started <= '0';
 
-        elsif rising_edge(clk_60Mhz) then
+        elsif rising_edge(i_clk_fast) then
             case state is
 
                 when wait_sampling_time =>
@@ -113,7 +113,7 @@ begin
 
     o_pipe_in_rd_en <= pipe_in_rd_en;
 
-    --    label_process_Injection : process(clk_60Mhz, reset) is
+    --    label_process_Injection : process(i_clk_fast, reset) is
     --    begin
     --        if reset = '1' then
     --
@@ -124,7 +124,7 @@ begin
     --            o_data  <= (others => '0');
     --            o_ready <= '0';
     --
-    --        elsif rising_edge(clk_60Mhz) then
+    --        elsif rising_edge(i_clk_fast) then
     --
     --            count <= count + 1;
     --

@@ -28,14 +28,19 @@ entity TUT_EGSE is
         okHU     : out   STD_LOGIC_VECTOR(2 downto 0);
         okUHU    : inout STD_LOGIC_VECTOR(31 downto 0);
         okAA     : inout STD_LOGIC;     --removed for simulation
+
         sys_clkp : in    STD_LOGIC;
         sys_clkn : in    STD_LOGIC;
-        sck      : out   STD_LOGIC;
-        cnv      : out   STD_LOGIC;
-        sdi      : in    STD_LOGIC;
-        sdo      : out   STD_LOGIC;
-        led      : out   STD_LOGIC_VECTOR(7 downto 0)
-        --clk_60Mhz : out   STD_LOGIC
+        
+        o_sck    : out   STD_LOGIC;
+        o_cs_n   : out   STD_LOGIC;
+        i_sdi    : in    STD_LOGIC;
+        
+        led      : out   STD_LOGIC_VECTOR(7 downto 0);
+        
+        i_sck_rx : in    STD_LOGIC;
+        o_sck_rx : out    STD_LOGIC
+        --clk_32Mhz : out   STD_LOGIC
     );
 end TUT_EGSE;
 
@@ -87,11 +92,11 @@ architecture arch of TUT_EGSE is
     signal locked                     : std_logic;
     signal din_fifo_pipe_out_raw_data : Array_config_32signedx2_type;
 
-    signal clk_60Mhz : STD_LOGIC;
+    signal clk_32Mhz : STD_LOGIC;
 
-    signal data_before_filter           : Array_config_16signedx2_type;
-    
-    signal ready_after_gain           : STD_LOGIC_VECTOR(1 downto 0);
+    signal data_before_filter : Array_config_16signedx2_type;
+
+    signal ready_after_gain             : STD_LOGIC_VECTOR(1 downto 0);
     signal wr_en_fifo_pipe_out_raw_data : STD_LOGIC_VECTOR(1 downto 0);
     signal i_Start_Capture              : STD_LOGIC_VECTOR(1 downto 0);
     signal i_level_trigger              : STD_LOGIC_VECTOR(1 downto 0);
@@ -106,11 +111,11 @@ architecture arch of TUT_EGSE is
     signal ready_fast_injection : std_logic;
     signal data_fast_injection  : signed(15 downto 0);
 
-    signal data_rx         : std_logic_vector(17 downto 0);
+    signal data_rx         : std_logic_vector(11 downto 0);
     signal ready_rx        : std_logic;
     signal i_data_CDC      : signed(15 downto 0);
     signal i_ready_CDC     : std_logic;
-    signal data_rx_keeped  : std_logic_vector(17 downto 0);
+    signal data_rx_keeped  : std_logic_vector(15 downto 0);
     signal ready_rx_keeped : std_logic;
 
     signal TH_rise      : std_logic_vector(31 downto 0);
@@ -131,8 +136,7 @@ architecture arch of TUT_EGSE is
     signal injection_started            : std_logic;
     signal continuous_injection         : std_logic;
     signal gain                         : Array_config_32stdx2_type;
-    signal data_after_gain              : Array_config_16signedx2_type;         
-    
+    signal data_after_gain              : Array_config_16signedx2_type;
 
     --signal ep23wire : std_logic_vector(31 downto 0);
     --signal ep24wire : std_logic_vector(31 downto 0);
@@ -148,7 +152,7 @@ begin
     led(2) <= '0' when (led_buf(2) = '1') else 'Z';
     led(1) <= '0' when (led_buf(1) = '1') else 'Z';
     led(0) <= '0' when (led_buf(0) = '1') else 'Z';
-    sdo    <= '1';
+    o_sck_rx <= i_sck_rx;
     ------------------------------------------
     --  LED
     ------------------------------------------
@@ -207,7 +211,7 @@ begin
     label_clk_mmcm : entity work.clk_wiz_0
         port map(
             clk_out1  => sys_clk,
-            clk_out2  => clk_60Mhz,
+            clk_out2  => clk_32Mhz,
             locked    => locked,
             clk_in1_p => sys_clkp,
             clk_in1_n => sys_clkn
@@ -267,7 +271,7 @@ begin
         port map(
             rst         => reset,
             wr_clk      => okClk,
-            rd_clk      => clk_60Mhz,
+            rd_clk      => clk_32Mhz,
             din         => pipe_in_injection_din_fifo,
             wr_en       => pipe_in_injection_wr_en_fifo,
             rd_en       => pipe_in_injection_rd_en_fifo,
@@ -287,7 +291,7 @@ begin
         port map(
             --global
             reset                  => reset,
-            clk_60Mhz              => clk_60Mhz,
+            i_clk_fast             => clk_32Mhz,
             --from pipe in fifo Injection
             i_continuous_injection => continuous_injection,
             o_pipe_in_rd_en        => pipe_in_injection_rd_en_fifo,
@@ -304,15 +308,15 @@ begin
     --  ADC to keeper
     ------------------------------------------  
 
-    label_read_ADC : entity work.Rx_fe
+    label_read_ADC : entity work.Rx_fe_ads7049_and
         port map(
             --global
-            clk        => clk_60Mhz,
+            clk        => clk_32Mhz,     
             rst        => reset,
             --IO ADC
-            o_sck      => sck,
-            o_cnv      => cnv,
-            i_sdo      => sdi,
+            o_sck      => o_sck,
+            o_cs_n     => o_cs_n,
+            i_sdi      => i_sdi,
             --out
             o_data_rx  => data_rx,
             o_ready_rx => ready_rx
@@ -322,15 +326,15 @@ begin
     --  keep data from ADC to CDC
     ------------------------------------------ 
 
-    label_keep_data_from_ADC : process(clk_60Mhz, reset) is
+    label_keep_data_from_ADC : process(clk_32Mhz, reset) is --  i_sck_rx replace clk_32Mhz
     begin
         if reset = '1' then
             data_rx_keeped  <= (others => '0');
             ready_rx_keeped <= '0';
-        elsif rising_edge(clk_60Mhz) then
+        elsif rising_edge(clk_32Mhz) then --  i_sck_rx replace clk_32Mhz
             if ready_rx = '1' then
                 ready_rx_keeped <= '1';
-                data_rx_keeped  <= data_rx;
+                data_rx_keeped  <= '0'&data_rx & b"000";
             else
                 ready_rx_keeped <= '0';
             end if;
@@ -341,7 +345,7 @@ begin
     --  MUX ADC OR Injection
     ------------------------------------------  
 
-    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped(17 downto 2)) when ep00wire(31) = '1' else data_fast_injection;
+    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped) when ep00wire(31) = '1' else data_fast_injection;
     label_mux_science_ready : i_ready_CDC <= ready_rx_keeped when ep00wire(31) = '1' else ready_fast_injection;
 
     ------------------------------------------
@@ -352,7 +356,7 @@ begin
             port map(
                 -- global
                 i_clk_slow                => sys_clk,
-                i_clk_fast                => clk_60Mhz,
+                i_clk_fast                => clk_32Mhz,
                 i_reset                   => reset,
                 -- global select spectrum
                 i_clk_synchro_spectrum    => clk_synchro_spectrum,

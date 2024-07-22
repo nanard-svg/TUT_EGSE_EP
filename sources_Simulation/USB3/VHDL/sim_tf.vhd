@@ -34,14 +34,16 @@ architecture simulate of sim_tf is
             okUH     : in    STD_LOGIC_VECTOR(4 downto 0);
             okHU     : out   STD_LOGIC_VECTOR(2 downto 0);
             okUHU    : inout STD_LOGIC_VECTOR(31 downto 0);
-            --okAA     : inout STD_LOGIC;     --removed for simulation
+            okAA     : inout STD_LOGIC; --removed for simulation
             sys_clkp : in    STD_LOGIC;
             sys_clkn : in    STD_LOGIC;
-            sck      : out   STD_LOGIC;
-            cnv      : out   STD_LOGIC;
-            sdi      : in    STD_LOGIC;
-            sdo      : out   STD_LOGIC;
-            led      : out   STD_LOGIC_VECTOR(7 downto 0)
+            o_sck    : out   STD_LOGIC;
+            o_cs_n   : out   STD_LOGIC;
+            i_sdi    : in    STD_LOGIC;
+            led      : out   STD_LOGIC_VECTOR(7 downto 0);
+            i_sck_rx : in    STD_LOGIC;
+            o_sck_rx : out   STD_LOGIC
+            --clk_60Mhz : out   STD_LOGIC
         );
     end component;
 
@@ -82,6 +84,9 @@ architecture simulate of sim_tf is
     signal cnv                       : STD_LOGIC;
     signal sdo                       : STD_LOGIC;
     signal sys_clk                   : std_logic;
+    signal cs_n                      : std_logic;
+    signal i_sck_rx                  : std_logic;
+	signal o_sck_rx					 : std_logic;
 
     ---------------------------------------------------------------------------------------------
 
@@ -107,11 +112,13 @@ begin
 
             sys_clkp => sys_clkp,
             sys_clkn => sys_clkn,
-            sck      => sck,
-            cnv      => cnv,
-            sdi      => sdo,
-            sdo      => open,
-            led      => open
+            o_sck    => sck,
+            o_cs_n   => cs_n,
+            i_sdi    => sdo,
+            
+            led      => open,
+            i_sck_rx => sck,
+            o_sck_rx => o_sck_rx
         );
 
     ---------------------------------------------------------------------------------------------------------------------------------
@@ -120,11 +127,11 @@ begin
     --
     ------------------------------------------------------------------------------------------------------
 
-    inst_AD7982_Emulators : entity work.AD7982_Emulators
+    inst_ADS7049_Emulators : entity work.ADS7049_Emulators
         port map(
             i_Rst_n => Reset,
             i_sck   => sck,
-            i_cnv   => cnv,
+            i_cs_n  => cs_n,
             o_sdo   => sdo
         );
 
@@ -1010,11 +1017,11 @@ begin
         FrontPanelReset;
         wait for 1 ns;
 
-        SetWireInValue(x"00", x"0000_0001", NO_MASK); -- Reset all design
+        SetWireInValue(x"00", x"8000_0001", NO_MASK); -- Reset all design
         UpdateWireIns;
-        SetWireInValue(x"00", x"0000_0000", NO_MASK); -- unReset all design 
+        SetWireInValue(x"00", x"8000_0000", NO_MASK); -- unReset all design 
         UpdateWireIns;
-        SetWireInValue(x"00", x"0000_0000", NO_MASK); -- set input ADC or Injection  
+        SetWireInValue(x"00", x"8000_0000", NO_MASK); -- set input ADC or Injection  
         UpdateWireIns;
 
         --wait for 700 us;                -- write raw data fifo almost full 
@@ -1041,16 +1048,16 @@ begin
         -- apply all
         SetWireInValue(x"03", x"0000_0100", NO_MASK); -- set TH_fall
         UpdateWireIns;
-        
+
         -- apply all
         SetWireInValue(x"04", x"0000_0000", NO_MASK); -- gain filter 0
         UpdateWireIns;
-        
+
         -- apply all
-        SetWireInValue(x"05", x"0000_0002", NO_MASK); -- gain filter 1
+        SetWireInValue(x"05", x"0000_0000", NO_MASK); -- gain filter 1
         UpdateWireIns;
 
-        SetWireInValue(x"00", x"E000_0002", NO_MASK); -- start capture and unReset all design 
+        SetWireInValue(x"00", x"F000_0002", NO_MASK); -- start capture and unReset all design 
         UpdateWireIns;
 
         wait for 500 us;
@@ -1090,7 +1097,6 @@ begin
         --Check_PipeOut(MODE_LFSR);
         --ReadFromPipeOut(x"A3", 1024 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
-
 
         wait;
 

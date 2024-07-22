@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity Rx_fe is
+entity Rx_fe_ads7049_and is
     port(
         --global
         clk        : in     std_logic;
@@ -15,14 +15,17 @@ entity Rx_fe is
         o_data_rx  : buffer std_logic_vector(11 downto 0);
         o_ready_rx : buffer std_logic
     );
-end entity Rx_fe;
+end entity Rx_fe_ads7049_and;
 
-architecture RTL of Rx_fe is
+architecture RTL of Rx_fe_ads7049_and is
 
     type state_type is (cs_falling, send_null, send_data, acq);
     signal state : state_type;
 
-    signal sck_count : unsigned(3 downto 0);
+    signal sck_count     : unsigned(3 downto 0);
+    signal o_cs_n_buffer : std_logic;
+
+    signal enable_sck : std_logic;
 
 begin
 
@@ -30,16 +33,17 @@ begin
     begin
         if rst = '1' then
 
-            state     <= cs_falling;
+            state         <= cs_falling;
             -- out to ADC
-            o_sck     <= '0';
-            o_cs_n    <= '1';
+            o_cs_n_buffer <= '1';
             -- sck_count
-            sck_count <= (others => '0');
+            sck_count     <= (others => '0');
 
             -- out to receiver    
             o_data_rx  <= (others => '0');
             o_ready_rx <= '0';
+
+            enable_sck <= '0';
 
         elsif falling_edge(clk) then    -- becarful falling_edge clock
 
@@ -47,8 +51,11 @@ begin
 
                 when cs_falling =>
 
-                    o_cs_n <= '0';
-                    state  <= send_null;
+                    o_ready_rx    <= '0';
+                    o_cs_n_buffer <= '0';
+                    enable_sck    <= '1';
+                    state         <= send_null;
+                    o_data_rx     <= (others => '0');
 
                 when send_null =>
 
@@ -60,26 +67,32 @@ begin
                 when send_data =>
 
                     o_data_rx <= o_data_rx(10 downto 0) & i_sdi;
-
                     sck_count <= sck_count + 1;
                     if sck_count = 13 then
-                        state     <= acq;
-                        sck_count <= (others => '0');
+                        state      <= acq;
+                        sck_count  <= (others => '0');
+                        enable_sck <= '0';
                     end if;
 
                 when acq =>
-                    
-                    sck_count <= sck_count + 1;
-                    o_cs_n <= '1';
-                    
+
+                    sck_count     <= sck_count + 1;
+                    o_cs_n_buffer <= '1';
+
                     if sck_count = 2 then
-                        state <= cs_falling;
-                        sck_count <= (others => '0');
+                        o_ready_rx <= '1';
+                        state      <= cs_falling;
+                        sck_count  <= (others => '0');
                     end if;
 
             end case;
 
         end if;
     end process;
+
+    o_cs_n <= o_cs_n_buffer;
+
+    o_sck <= clk and enable_sck;
+    --o_sck <= clk;
 
 end architecture RTL;
