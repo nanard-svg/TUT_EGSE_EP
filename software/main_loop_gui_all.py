@@ -6,6 +6,7 @@ import math
 import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+import os
 
 import matplotlib.pyplot as plt
 
@@ -17,6 +18,21 @@ def clr_graph() :
     # tk.messagebox.showinfo("showinfo", "init_spectrum = {}".format(init_spectrum))
 
 
+def save_signal_in_file (Signal_out, file_name) :
+
+    file_path = "C:/Users/Bernard BERTRAND/Desktop/{}".format(file_name)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    fichier = open(file_path, "w")
+
+    for elm in Signal_out:
+
+        fichier.write("{}\n".format(elm))
+
+    fichier.close()
+
+    return
+
+
 ############################### classe OK
 
 array_pipe_out = np.ones(1028).astype(int)
@@ -24,8 +40,8 @@ list_array_pipe_out_MSB = []
 list_array_pipe_out_LSB = []
 list_array_pipe_out1_MSB = []
 list_array_pipe_out1_LSB = []
-Spectre = [0 for i in range(0, 1023)]
-Spectre1 = [0 for i in range(0, 1023)]
+Spectre = [0 for i in range(0, 1024)]
+Spectre1 = [0 for i in range(0, 1024)]
 
 
 #################################### global setting ######################################
@@ -211,8 +227,8 @@ def delay_end(fig):
 
         if init_spectrum == True :
 
-            Spectre = [0 for i in range(0, 1023)]
-            Spectre1 = [0 for i in range(0, 1023)]
+            Spectre = [0 for i in range(0, 1024)]
+            Spectre1 = [0 for i in range(0, 1024)]
             init_spectrum = False
             # tk.messagebox.showinfo("showinfo", "init_spectrum = {}".format(init_spectrum))
 
@@ -251,7 +267,7 @@ def param(mode_adc, reset_ram, continuous_ready, start_capture,reset):
 
 def Reset_unreset() :
 
-    mode_adc = 1  # set to one if ADC use
+    mode_adc = 0  # set to one if ADC use
     reset_ram = 1  # set to one if clear RAM spectrum
     continuous_ready = 1  # generally set to one set to zero if filter analysis
     start_capture = 0
@@ -278,11 +294,13 @@ def close() :
 
     print("\nNb de coups :\nFir1 = {}\nFir2 = {}\n ".format(sum(Spectre), sum(Spectre1)))
 
+    save_signal_in_file([Spectre,Spectre1], "Resultat_fir.txt")
+
     racine.destroy()
     racine.quit()
 
 # def clear_vect(Spectre):
-    # Spectre = [0 for i in range(0, 1023)]
+    # Spectre = [0 for i in range(0, 1024)]
     # print("####################################################################################################")
 
 
@@ -497,7 +515,7 @@ print(gain_filtre0)
 valeur = 1
 print("get_gain_filtre1:", valeur)
 gain_filtre1 = int(math.log2(int(valeur)))
-des.setwire_gain_filtre0(gain_filtre1)
+des.setwire_gain_filtre1(gain_filtre1)
 print(gain_filtre0)
 
 ###################################  START CAPTURE  ###############################################

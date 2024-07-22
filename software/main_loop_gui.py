@@ -223,7 +223,7 @@ def Injection() :
     print("injection")
     des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
 
-    file_name = open('Signal_ADC_20keV.txt', "r")
+    file_name = open('Signal_ADC_100keV.txt', "r")
     lines = file_name.readlines()
     formated_lines = []
     for elm in lines:

@@ -241,7 +241,8 @@ for file_name in file_names:
 ################################### TEST fifo pipe out read pointer FILTER 1 ##############################################
     adress_wire_out_science = 0x23
     des.getwire(adress_wire_out_science)
-    while (get != 252 and get != 1024) :
+    #while (get != 252 and get != 1024) :
+    while (get != 1024) :
         #print("############################################")
         print("read pointer  {}".format(get))
         #print("##############################################")
@@ -262,7 +263,8 @@ for file_name in file_names:
 ################################### TEST fifo pipe out read pointer FILTER 0 ##############################################
     adress_wire_out_science = 0x20
     des.getwire(adress_wire_out_science)
-    while (get != 252 and get != 1024 ) :
+    #while (get != 252 and get != 1024 ) :
+    while (get != 1024 ) :
         #print("############################################")
         print("read pointer  {}".format(get))
         #print("##############################################")

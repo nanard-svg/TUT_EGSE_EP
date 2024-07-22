@@ -184,14 +184,14 @@ des.setpipein(list_pipe_in_array_1,adresse)
 ###################################  SET LEVEL TRIGG  ###############################################
 print ("set trigger_level")
 #level_trig=0xFFFF8EB8
-level_trig= -15000  #-29000
+level_trig= 3000
 level_trig=int(np.uint32(level_trig))
 print(level_trig)
 des.setwire()
 
 print ("set trigger_TH_rise")
 #level_trig=0xFFFF8EB8
-TH_rise= -11000 #-200
+TH_rise= -16000 #-200
 TH_rise=int(np.uint32(TH_rise))
 print(TH_rise)
 des.setwire_TH_rise()
@@ -217,27 +217,29 @@ for c in range(100):
 ################################### TEST fifo pipe out read pointer##############################################
     adress_wire_out_science = 0x20
     des.getwire(adress_wire_out_science)
-    while ((get != 1024) and (get != 512)):
+    #while ((get != 1024) and (get != 512)):
+    while (get != 1024) :
         print("############################################")
         print("read pointer filter 0 0x20  {}".format(get))
         print("############################################")
         des.getwire(adress_wire_out_science)
 
-    #print("############################################")
-    #print("read pointer  {}".format(get))
-    #print("############################################")
+    print("############################################")
+    print("read pointer filter 0 0x20 out test {}".format(get))
+    print("############################################")
 
 ################################### TEST fifo pipe out read pointer FILTER 1 ##############################################
     adress_wire_out_science = 0x23
     des.getwire(adress_wire_out_science)
-    while ((get != 1024) and (get != 512)):
+    #while ((get != 1024) and (get != 512)):
+    while (get != 1024) :
         #print("############################################")
         print("read pointer filter 1 0x23   {}".format(get))
         #print("##############################################")
         des.getwire(adress_wire_out_science)
 
     print("############################################")
-    print("read pointer filter 1 0x23  {}".format(get))
+    print("read pointer filter 1 0x23 out test {}".format(get))
     print("############################################")
 
 ################################ READ FIFO  Pipe out raw data science FILTER 1  #############################################
@@ -285,7 +287,7 @@ for c in range(100):
 ############################ write "list_array_pipe_out file" in file indice name  ##########################################
     file_name_out = f"{indice}.txt"
     file = open(file_name_out, "w")
-    for items in list_array_pipe_out_MSB:
+    for items in list_array_pipe_out_LSB:
         file.write('%s\n' % items)
     file.close()
     indice+=1

@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="61" Path="C:/3Utransat/TUT_EGSE_EP_ADS7049/Vivado/TUT_EGSE_EP.xpr">
+<Project Version="7" Minor="61" Path="C:/3Utransat/TUT_EGSE_EP_ads7049_branch/Vivado/TUT_EGSE_EP.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="589934dcc2fa432b9dcb27e6df997b97"/>
@@ -215,14 +215,14 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../sources/ADC/Rx_fe_ads7049_continuous_clock.vhd">
+      <File Path="$PPRDIR/../../TUT_EGSE_EP_ADS7049/sources/ADC/Rx_fe_ads7049_continuous_clock.vhd">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../sources/ADC/Rx_fe_ads7049.vhd">
+      <File Path="$PPRDIR/../../TUT_EGSE_EP_ADS7049/sources/ADC/Rx_fe_ads7049.vhd">
         <FileInfo>
           <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
