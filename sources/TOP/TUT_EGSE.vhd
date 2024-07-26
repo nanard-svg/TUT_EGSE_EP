@@ -208,14 +208,30 @@ begin
     --  PLL MMCM
     ------------------------------------------
 
-    label_clk_mmcm : entity work.clk_wiz_0
-        port map(
-            clk_out1  => sys_clk,
-            clk_out2  => clk_32Mhz,
-            locked    => locked,
-            clk_in1_p => sys_clkp,
-            clk_in1_n => sys_clkn
-        );
+    label_generate_complex_clock : if ads_7049_complex_clock = '1' generate
+        label_clk_mmcm : entity work.clk_wiz_0
+            port map(
+                clk_out1  => sys_clk,
+                clk_out2  => clk_32Mhz,
+                locked    => locked,
+                clk_in1_p => sys_clkp,
+                clk_in1_n => sys_clkn
+            );
+    end generate label_generate_complex_clock;
+    
+    label_generate : if ads_7049_complex_clock = '0' generate 
+        label_clk_mmcm : entity work.clk_wiz_0
+            port map(
+                clk_out1  => sys_clk,
+                clk_out2  => open,
+                locked    => locked,
+                clk_in1_p => sys_clkp,
+                clk_in1_n => sys_clkn
+            );
+            
+        clk_32Mhz <=  sys_clk;   
+    end generate label_generate;              
+    
 
     ------------------------------------------
     -- Cycle spectrum

@@ -50,22 +50,33 @@ architecture RTL of EP is
 begin
 
     ------------------------------------------
-    --  CDC after Injection
+    --  CDC after Injection or ADC
     ------------------------------------------
 
-    label_cdc : entity work.Fast_to_Slow_CDC
-        port map(
-            --global
-            i_reset    => i_reset,
-            i_clk_fast => i_clk_fast,
-            i_clk_slow => i_clk_slow,
-            --ready
-            i_ready    => i_ready_CDC,
-            o_ready    => ready_before_filter, --ready_slow,
-            --data science
-            i_data     => i_data_CDC,
-            o_data     => data_before_filter --data_slow
-        );
+    label_generate_complex_clock : if ads_7049_complex_clock = '1' generate
+        label_cdc : entity work.Fast_to_Slow_CDC
+            port map(
+                --global
+                i_reset    => i_reset,
+                i_clk_fast => i_clk_fast,
+                i_clk_slow => i_clk_slow,
+                --ready
+                i_ready    => i_ready_CDC,
+                o_ready    => ready_before_filter, --ready_slow,
+                --data science
+                i_data     => i_data_CDC,
+                o_data     => data_before_filter --data_slow
+            );
+    end generate label_generate_complex_clock;
+
+    ------------------------------------------
+    --  Without CDC
+    ------------------------------------------
+
+    label_generate : if ads_7049_complex_clock = '0' generate
+        data_before_filter  <= i_data_CDC;
+        ready_before_filter <= i_ready_CDC;
+    end generate label_generate;
 
     ------------------------------------------
     --  FIR filter

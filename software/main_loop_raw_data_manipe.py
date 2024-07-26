@@ -292,18 +292,25 @@ for c in range(100):
     file.close()
     indice+=1
 
-    plt.subplot(211)
+    plt.subplot(221)
     plt.plot(list_array_pipe_out_LSB_0)
     plt.plot(list_array_pipe_out_MSB_0)
     plt.title("Filter 0")
     plt.xlabel("temps")
     plt.ylabel("amplitude")
-    plt.subplot(212)
+    plt.subplot(222)
     plt.plot(list_array_pipe_out_LSB)
     plt.plot(list_array_pipe_out_MSB)
     plt.title("Filter 1")
     plt.xlabel("temps")
     plt.ylabel("amplitude")
     plt.show()
+
+    plt.subplot(223)
+    plt.plot(list_array_pipe_out_MSB)
+    plt.plot(list_array_pipe_out_MSB_0)
+    plt.title("out Filter 0 & out Filter 1")
+    plt.xlabel("temps")
+    plt.ylabel("amplitude")
 
 print("script done")
