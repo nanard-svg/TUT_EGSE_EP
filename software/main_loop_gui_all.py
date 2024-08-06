@@ -26,7 +26,8 @@ def save_signal_in_file (Signal_out, file_name) :
 
     for elm in Signal_out:
 
-        fichier.write("{}\n".format(elm))
+        #fichier.write("{}\n".format(elm))
+        fichier.write('%s\n' % elm)
 
     fichier.close()
 
@@ -294,8 +295,9 @@ def close() :
 
     print("\nNb de coups :\nFir1 = {}\nFir2 = {}\n ".format(sum(Spectre), sum(Spectre1)))
 
-    save_signal_in_file([Spectre,Spectre1], "Resultat_fir.txt")
-
+    save_signal_in_file(Spectre, "Spectre.txt")
+    print(Spectre)
+    print(Spectre1)
     racine.destroy()
     racine.quit()
 

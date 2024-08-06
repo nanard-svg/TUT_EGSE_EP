@@ -360,8 +360,8 @@ begin
     ------------------------------------------
     --  MUX ADC OR Injection
     ------------------------------------------  
-
-    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped) when ep00wire(31) = '1' else data_fast_injection;
+    -- data_rx_keeped  <= '0'&data_rx & b"000";  comment format
+    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped) when ep00wire(31) = '1' else ('0'&data_fast_injection(11 downto 0)&b"000");
     label_mux_science_ready : i_ready_CDC <= ready_rx_keeped when ep00wire(31) = '1' else ready_fast_injection;
 
     ------------------------------------------

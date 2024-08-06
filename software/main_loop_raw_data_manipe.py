@@ -218,7 +218,7 @@ for c in range(100):
     adress_wire_out_science = 0x20
     des.getwire(adress_wire_out_science)
     #while ((get != 1024) and (get != 512)):
-    while (get != 1024) :
+    while (get != 256) :
         print("############################################")
         print("read pointer filter 0 0x20  {}".format(get))
         print("############################################")
@@ -232,7 +232,7 @@ for c in range(100):
     adress_wire_out_science = 0x23
     des.getwire(adress_wire_out_science)
     #while ((get != 1024) and (get != 512)):
-    while (get != 1024) :
+    while (get != 256) :
         #print("############################################")
         print("read pointer filter 1 0x23   {}".format(get))
         #print("##############################################")
@@ -285,11 +285,18 @@ for c in range(100):
     print("max-min on input filter", max(list_array_pipe_out_LSB_0) - min(list_array_pipe_out_LSB_0))
 
 ############################ write "list_array_pipe_out file" in file indice name  ##########################################
-    file_name_out = f"{indice}.txt"
+    file_name_out = f"{indice}_LSB.txt"
     file = open(file_name_out, "w")
     for items in list_array_pipe_out_LSB:
         file.write('%s\n' % items)
     file.close()
+
+    file_name_out = f"{indice}_MSB.txt"
+    file_MSB = open(file_name_out, "w")
+    for items in list_array_pipe_out_MSB:
+        file_MSB.write('%s\n' % items)
+    file_MSB.close()
+
     indice+=1
 
     plt.subplot(221)

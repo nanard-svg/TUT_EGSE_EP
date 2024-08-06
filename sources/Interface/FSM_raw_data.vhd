@@ -63,7 +63,7 @@ begin
         else
             if rising_edge(i_clk_slow) then
 
-                if i_ready = '1' and To_integer(Initial_Fill_Count) < 512 then
+                if i_ready = '1' and To_integer(Initial_Fill_Count) < 128 then
                     Initial_Fill_Count <= Initial_Fill_Count + 1;
                 end if;
 
@@ -71,7 +71,7 @@ begin
         end if;
     end process;
 
-    rd_en <= '0' when (To_integer(Initial_Fill_Count)) < 512 else i_ready;
+    rd_en <= '0' when (To_integer(Initial_Fill_Count)) < 128 else i_ready;
 
     ------------------------------------------------------------------------------------------------
     -- Raw buffer read
@@ -129,7 +129,7 @@ begin
                         o_wr_en_fifo_pipe_out_raw_data <= '1';
                         Raw_Sample_Count               <= Raw_Sample_Count + 1;
 
-                        if (To_integer(Raw_Sample_Count) = 1024 - 1) then
+                        if (To_integer(Raw_Sample_Count) = 256 - 1) then
                             state <= IDLE;
                         end if;
 

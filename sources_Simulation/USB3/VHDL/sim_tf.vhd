@@ -1036,7 +1036,7 @@ begin
 
         wait for 10 us;
         -- apply all
-        SetWireInValue(x"01", x"0000_0001", NO_MASK); -- set trig
+        SetWireInValue(x"01", x"0000_0FA0", NO_MASK); -- set trig
         UpdateWireIns;
 
         wait for 10 us;
@@ -1069,31 +1069,31 @@ begin
         --WireOutValue <= GetWireOutValue(x"01");
         UpdateWireOuts;
 
-        wait for 2000 us;
+        wait for 300 us;
 
         ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
-        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
-        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
-        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        --ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        --ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        --ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
         --ReadFromPipeOut(x"A3", 1024 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
 
-        wait for 500 us;
-        pipeIn := pipeIn_signal;
-        WriteToPipeIn(x"80", pipeInSize_count * 4); --  0x80 injection 
+        --wait for 500 us;
+        --pipeIn := pipeIn_signal;
+        --WriteToPipeIn(x"80", pipeInSize_count * 4); --  0x80 injection 
 
         wait for 10 us;
 
         --WireOutValue <= GetWireOutValue(x"01");
         UpdateWireOuts;
 
-        wait for 2000 us;
+        wait for 500 us;
 
         ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
-        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
-        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
-        ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        --ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        --ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
+        --ReadFromPipeOut(x"A3", 256 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
         --ReadFromPipeOut(x"A3", 1024 * 4); -- read on pipe out
         --Check_PipeOut(MODE_LFSR);
