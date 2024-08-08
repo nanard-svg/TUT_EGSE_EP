@@ -508,13 +508,13 @@ TH_fall=int(np.uint32(TH_fall))
 print(TH_fall)
 des.setwire_TH_fall(TH_fall)
 
-valeur = 1
+valeur = 2
 print("get_gain_filtre0:", valeur)
 gain_filtre0 = int(math.log2(int(valeur)))
 des.setwire_gain_filtre0(gain_filtre0)
 print(gain_filtre0)
 
-valeur = 1
+valeur = 2
 print("get_gain_filtre1:", valeur)
 gain_filtre1 = int(math.log2(int(valeur)))
 des.setwire_gain_filtre1(gain_filtre1)

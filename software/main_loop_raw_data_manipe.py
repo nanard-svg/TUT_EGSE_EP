@@ -313,11 +313,5 @@ for c in range(100):
     plt.ylabel("amplitude")
     plt.show()
 
-    plt.subplot(223)
-    plt.plot(list_array_pipe_out_MSB)
-    plt.plot(list_array_pipe_out_MSB_0)
-    plt.title("out Filter 0 & out Filter 1")
-    plt.xlabel("temps")
-    plt.ylabel("amplitude")
 
 print("script done")

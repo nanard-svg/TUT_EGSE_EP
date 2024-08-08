@@ -27,8 +27,8 @@ file_names = ['Signal_ADC_20keV.txt','Signal_ADC_100keV.txt','Signal_ADC_200keV.
 #list_pipe_in_array = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 ,14 ,15 ,16 ,15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1,0,-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13 ,-14 ,-15 ,-16 ,-15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1,0])
 
 
-array_pipe_out = np.ones(512).astype(int)
-list_pipe_in_array = np.ones(252).astype(int)
+array_pipe_out = np.ones(1024).astype(int)
+list_pipe_in_array = np.ones(1024).astype(int)
 
 #################################################
 #list_pipe_in = np.array(ma_liste)
@@ -188,7 +188,7 @@ des.setpipein(list_pipe_in_array_1,adresse)
 ###################################  SET LEVEL TRIGG  ###############################################
 print ("set trigger_level")
 #level_trig=0xFFFF8EB8
-level_trig= -29000
+level_trig= 5000
 level_trig=int(np.uint32(level_trig))
 print(level_trig)
 des.setwire()

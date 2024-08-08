@@ -79,7 +79,7 @@ begin
                     sck_count     <= sck_count + 1;
                     o_cs_n_buffer <= '1';
 
-                    if sck_count = 2 then
+                    if sck_count = 4 then
                         o_ready_rx <= '1';
                         state      <= cs_falling;
                         sck_count  <= (others => '0');
