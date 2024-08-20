@@ -31,19 +31,24 @@ architecture simulate of sim_tf is
 
     component TUT_EGSE is
         port(
-            okUH     : in    STD_LOGIC_VECTOR(4 downto 0);
-            okHU     : out   STD_LOGIC_VECTOR(2 downto 0);
-            okUHU    : inout STD_LOGIC_VECTOR(31 downto 0);
-            okAA     : inout STD_LOGIC; --removed for simulation
-            sys_clkp : in    STD_LOGIC;
-            sys_clkn : in    STD_LOGIC;
-            o_sck    : out   STD_LOGIC;
-            o_cs_n   : out   STD_LOGIC;
-            i_sdi    : in    STD_LOGIC;
-            led      : out   STD_LOGIC_VECTOR(7 downto 0);
-            i_sck_rx : in    STD_LOGIC;
-            o_sck_rx : out   STD_LOGIC
-            --clk_60Mhz : out   STD_LOGIC
+            okUH         : in    STD_LOGIC_VECTOR(4 downto 0);
+            okHU         : out   STD_LOGIC_VECTOR(2 downto 0);
+            okUHU        : inout STD_LOGIC_VECTOR(31 downto 0);
+            okAA         : inout STD_LOGIC; --removed for simulation
+            -- clock OK
+            sys_clkp     : in    STD_LOGIC;
+            sys_clkn     : in    STD_LOGIC;
+            -- AD7049
+            o_sck        : out   STD_LOGIC;
+            o_cs_n       : out   STD_LOGIC;
+            i_sdi        : in    STD_LOGIC;
+            led          : out   STD_LOGIC_VECTOR(7 downto 0);
+            i_sck_rx     : in    STD_LOGIC;
+            o_sck_rx     : out   STD_LOGIC;
+            -- DAC121S
+            o_DAC_SCLK   : out   STD_LOGIC;
+            o_DAC_SYNC_n : out   STD_LOGIC;
+            o_DAC_DIN    : out   STD_LOGIC
         );
     end component;
 
@@ -86,7 +91,7 @@ architecture simulate of sim_tf is
     signal sys_clk                   : std_logic;
     signal cs_n                      : std_logic;
     signal i_sck_rx                  : std_logic;
-	signal o_sck_rx					 : std_logic;
+    signal o_sck_rx                  : std_logic;
 
     ---------------------------------------------------------------------------------------------
 
@@ -115,10 +120,13 @@ begin
             o_sck    => sck,
             o_cs_n   => cs_n,
             i_sdi    => sdo,
-            
             led      => open,
             i_sck_rx => sck,
-            o_sck_rx => o_sck_rx
+            o_sck_rx => o_sck_rx,
+            -- DAC121S
+            o_DAC_SCLK   => open,
+            o_DAC_SYNC_n => open,
+            o_DAC_DIN    => open
         );
 
     ---------------------------------------------------------------------------------------------------------------------------------
@@ -1056,8 +1064,17 @@ begin
         -- apply all
         SetWireInValue(x"05", x"0000_0000", NO_MASK); -- gain filter 1
         UpdateWireIns;
+        
+        -- apply DAc setting
+        SetWireInValue(x"06", x"0000_00AA", NO_MASK); -- gain filter 0
+        UpdateWireIns;
 
-        SetWireInValue(x"00", x"F000_0002", NO_MASK); -- start capture and unReset all design 
+        -- apply DAc setting
+        SetWireInValue(x"06", x"0000_00AA", NO_MASK); -- gain filter 0
+        UpdateWireIns;
+
+        wait for 20000 us;
+        SetWireInValue(x"06", x"0000_0055", NO_MASK); -- gain filter 0
         UpdateWireIns;
 
         wait for 500 us;

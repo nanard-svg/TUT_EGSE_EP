@@ -24,23 +24,24 @@ use UNISIM.vcomponents.all;
 
 entity TUT_EGSE is
     port(
-        okUH     : in    STD_LOGIC_VECTOR(4 downto 0);
-        okHU     : out   STD_LOGIC_VECTOR(2 downto 0);
-        okUHU    : inout STD_LOGIC_VECTOR(31 downto 0);
-        okAA     : inout STD_LOGIC;     --removed for simulation
-
-        sys_clkp : in    STD_LOGIC;
-        sys_clkn : in    STD_LOGIC;
-        
-        o_sck    : out   STD_LOGIC;
-        o_cs_n   : out   STD_LOGIC;
-        i_sdi    : in    STD_LOGIC;
-        
-        led      : out   STD_LOGIC_VECTOR(7 downto 0);
-        
-        i_sck_rx : in    STD_LOGIC;
-        o_sck_rx : out    STD_LOGIC
-        --clk_32Mhz : out   STD_LOGIC
+        okUH         : in    STD_LOGIC_VECTOR(4 downto 0);
+        okHU         : out   STD_LOGIC_VECTOR(2 downto 0);
+        okUHU        : inout STD_LOGIC_VECTOR(31 downto 0);
+        okAA         : inout STD_LOGIC; --removed for simulation
+        -- clock OK
+        sys_clkp     : in    STD_LOGIC;
+        sys_clkn     : in    STD_LOGIC;
+        --AD7049
+        o_sck        : out   STD_LOGIC;
+        o_cs_n       : out   STD_LOGIC;
+        i_sdi        : in    STD_LOGIC;
+        led          : out   STD_LOGIC_VECTOR(7 downto 0);
+        i_sck_rx     : in    STD_LOGIC;
+        o_sck_rx     : out   STD_LOGIC;
+        -- DAC121S
+        o_DAC_SCLK   : out   STD_LOGIC;
+        o_DAC_SYNC_n : out   STD_LOGIC;
+        o_DAC_DIN    : out   STD_LOGIC
     );
 end TUT_EGSE;
 
@@ -138,20 +139,30 @@ architecture arch of TUT_EGSE is
     signal gain                         : Array_config_32stdx2_type;
     signal data_after_gain              : Array_config_16signedx2_type;
 
+    signal Start            : std_logic;
+    signal Num_Data         : std_logic_vector(11 downto 0);
+    signal level_DAC121S    : std_logic_vector(31 downto 0);
+    signal Busy             : std_logic;
+    signal count_clock_1KHz : unsigned(15 downto 0);
+    signal clk_1KHz         : std_logic;
+
+    signal cmpt_sequencer   : unsigned (14 downto 0);
+    signal enable_clock_1KHz : std_logic;
+
     --signal ep23wire : std_logic_vector(31 downto 0);
     --signal ep24wire : std_logic_vector(31 downto 0);
     --signal ep25wire : std_logic_vector(31 downto 0);
 
 begin
 
-    led(7) <= '0' when (led_buf(7) = '1') else 'Z';
-    led(6) <= '0' when (led_buf(6) = '1') else 'Z';
-    led(5) <= '0' when (led_buf(5) = '1') else 'Z';
-    led(4) <= '0' when (led_buf(4) = '1') else 'Z';
-    led(3) <= '0' when (led_buf(3) = '1') else 'Z';
-    led(2) <= '0' when (led_buf(2) = '1') else 'Z';
-    led(1) <= '0' when (led_buf(1) = '1') else 'Z';
-    led(0) <= '0' when (led_buf(0) = '1') else 'Z';
+    led(7)   <= '0' when (led_buf(7) = '1') else 'Z';
+    led(6)   <= '0' when (led_buf(6) = '1') else 'Z';
+    led(5)   <= '0' when (led_buf(5) = '1') else 'Z';
+    led(4)   <= '0' when (led_buf(4) = '1') else 'Z';
+    led(3)   <= '0' when (led_buf(3) = '1') else 'Z';
+    led(2)   <= '0' when (led_buf(2) = '1') else 'Z';
+    led(1)   <= '0' when (led_buf(1) = '1') else 'Z';
+    led(0)   <= '0' when (led_buf(0) = '1') else 'Z';
     o_sck_rx <= i_sck_rx;
     ------------------------------------------
     --  LED
@@ -218,8 +229,8 @@ begin
                 clk_in1_n => sys_clkn
             );
     end generate label_generate_complex_clock;
-    
-    label_generate : if ads_7049_complex_clock = '0' generate 
+
+    label_generate : if ads_7049_complex_clock = '0' generate
         label_clk_mmcm : entity work.clk_wiz_0
             port map(
                 clk_out1  => sys_clk,
@@ -228,13 +239,12 @@ begin
                 clk_in1_p => sys_clkp,
                 clk_in1_n => sys_clkn
             );
-            
-        clk_32Mhz <=  sys_clk;   
-    end generate label_generate;              
-    
+
+        clk_32Mhz <= sys_clk;
+    end generate label_generate;
 
     ------------------------------------------
-    -- Cycle spectrum
+    -- Cycle spectrum, DAC121S, integration time
     ------------------------------------------
 
     label_Cycle_spectrum : process(sys_clk, reset) is
@@ -244,12 +254,40 @@ begin
             clk_synchro_spectrum   <= '0';
         elsif rising_edge(sys_clk) then
             count_synchro_spectrum <= count_synchro_spectrum + 1;
-            if To_integer(count_synchro_spectrum) = 10000000 then
+            if To_integer(count_synchro_spectrum) >= 10000000 then
                 clk_synchro_spectrum   <= not clk_synchro_spectrum;
                 count_synchro_spectrum <= (others => '0');
             end if;
         end if;
     end process;
+
+    label_clock_1KHz : process(sys_clk, reset) is
+    begin
+        if reset = '1' then
+            count_clock_1KHz <= (others => '0');
+            clk_1KHz         <= '0';
+        elsif rising_edge(sys_clk) then
+            count_clock_1KHz <= count_clock_1KHz + 1;
+            if To_integer(count_clock_1KHz) >= 10000 then
+                clk_1KHz         <= not clk_1KHz;
+                count_clock_1KHz <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    label_clock_enable : process(sys_clk, reset) is
+    begin
+        if reset = '1' then
+            cmpt_sequencer <= (others => '0');
+            
+        elsif rising_edge(sys_clk) then
+            cmpt_sequencer <= cmpt_sequencer + 1;
+        end if;
+    end process;
+
+
+    enable_clock_1KHz <= cmpt_sequencer(14) and cmpt_sequencer(13) and cmpt_sequencer(12) and cmpt_sequencer(11) and cmpt_sequencer(10) and cmpt_sequencer(9) and
+    cmpt_sequencer(8) and cmpt_sequencer(7) and cmpt_sequencer(6) and cmpt_sequencer(5) and cmpt_sequencer(4) and cmpt_sequencer(3) and cmpt_sequencer(2) and cmpt_sequencer(1) and cmpt_sequencer(0);
 
     ------------------------------------------
     --  global conf
@@ -327,7 +365,7 @@ begin
     label_read_ADC : entity work.Rx_fe_ads7049_and
         port map(
             --global
-            clk        => clk_32Mhz,     
+            clk        => clk_32Mhz,
             rst        => reset,
             --IO ADC
             o_sck      => o_sck,
@@ -350,7 +388,7 @@ begin
         elsif rising_edge(clk_32Mhz) then --  i_sck_rx replace clk_32Mhz
             if ready_rx = '1' then
                 ready_rx_keeped <= '1';
-                data_rx_keeped  <= '0'&data_rx & b"000";
+                data_rx_keeped  <= '0' & data_rx & b"000";
             else
                 ready_rx_keeped <= '0';
             end if;
@@ -361,7 +399,7 @@ begin
     --  MUX ADC OR Injection
     ------------------------------------------  
     -- data_rx_keeped  <= '0'&data_rx & b"000";  comment format
-    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped) when ep00wire(31) = '1' else ('0'&data_fast_injection(11 downto 0)&b"000");
+    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped) when ep00wire(31) = '1' else ('0' & data_fast_injection(11 downto 0) & b"000");
     label_mux_science_ready : i_ready_CDC <= ready_rx_keeped when ep00wire(31) = '1' else ready_fast_injection;
 
     ------------------------------------------
@@ -461,6 +499,41 @@ begin
             end if;
         end process;
     end generate generate_label_trigger;
+
+    ------------------------------------------
+    --  map DAC121S101_Driver
+    ------------------------------------------    
+    label_DAC121S101_Driver : entity work.DAC121S101_Driver
+        port map(
+            i_Rst_n      => not reset,
+            i_Clk        => clk_1KHz,
+            --remote DAC
+            i_Start      => Start,
+            o_Busy       => Busy,
+            i_Num_Data   => Num_Data,
+            --DAC
+            o_DAC_SCLK   => o_DAC_SCLK,
+            o_DAC_SYNC_n => o_DAC_SYNC_n,
+            o_DAC_DIN    => o_DAC_DIN
+        );
+
+    ------------------------------------------
+    --  remote DAC121S101_Driver
+    ------------------------------------------
+    label_remote_DAC121 : process(clk_1KHz, reset) is
+    begin
+        if reset = '1' then
+            Start    <= '0';
+            Num_Data <= (others => '0');
+        elsif rising_edge(clk_1KHz) then
+            Start <= '0';
+            if Num_Data /= level_DAC121S(11 downto 0) and Busy = '0' then
+                Start    <= '1';
+                Num_Data <= level_DAC121S(11 downto 0);
+            end if;
+        end if;
+    end process;
+
     ------------------------------------------
     --  FIFO pipe_out data science
     ------------------------------------------
@@ -584,6 +657,8 @@ begin
     ep04 : okWireIn port map(okHE => okHE, ep_addr => x"04", ep_dataout => gain(0));
     --  level gain
     ep05 : okWireIn port map(okHE => okHE, ep_addr => x"05", ep_dataout => gain(1));
+    --  level DAC121S 
+    ep06 : okWireIn port map(okHE => okHE, ep_addr => x"06", ep_dataout => level_DAC121S);
 
     --  read wire out for FIFO pipe out science.
     ep20 : okWireOut port map(okHE => okHE, okEH => okEHx(1 * 65 - 1 downto 0 * 65), ep_addr => x"20", ep_datain => ep20wire(0));

@@ -184,7 +184,7 @@ des.setpipein(list_pipe_in_array_1,adresse)
 ###################################  SET LEVEL TRIGG  ###############################################
 print ("set trigger_level")
 #level_trig=0xFFFF8EB8
-level_trig= 3000
+level_trig= 2400
 level_trig=int(np.uint32(level_trig))
 print(level_trig)
 des.setwire()

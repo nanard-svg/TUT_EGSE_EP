@@ -18,18 +18,23 @@ def clr_graph() :
     # tk.messagebox.showinfo("showinfo", "init_spectrum = {}".format(init_spectrum))
 
 
-def save_signal_in_file (Signal_out, file_name) :
+def save_signal_in_file (Signal_out) :
 
-    file_path = "C:/Users/Bernard BERTRAND/Desktop/{}".format(file_name)
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    fichier = open(file_path, "w")
+    trimester = time.strftime("%Y%m%d-%H%M%S")
+    file_name = trimester + 'spectre.txt'  # file name
+    dir_path = 'C:/Users/Bernard BERTRAND/Desktop/'
+    path = dir_path + file_name
+    #file_path = "C:/Users/Bernard BERTRAND/Desktop/{}".format(file_name)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    file_name = open(path, "w")
 
     for elm in Signal_out:
 
         #fichier.write("{}\n".format(elm))
-        fichier.write('%s\n' % elm)
+        file_name.write('%s\n' % elm)
 
-    fichier.close()
+    file_name.close()
 
     return
 
@@ -295,7 +300,8 @@ def close() :
 
     print("\nNb de coups :\nFir1 = {}\nFir2 = {}\n ".format(sum(Spectre), sum(Spectre1)))
 
-    save_signal_in_file(Spectre, "Spectre.txt")
+    save_signal_in_file(Spectre)
+    #print(time.strftime())
     print(Spectre)
     print(Spectre1)
     racine.destroy()

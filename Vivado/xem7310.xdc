@@ -132,3 +132,7 @@ set_property PACKAGE_PIN T5 [get_ports {i_sck_rx}]
 set_property IOSTANDARD LVCMOS33 [get_ports {i_sck_rx}]
 #set_property PULLUP {TRUE} [get_ports i_sck_rx]
 set_property -dict {PACKAGE_PIN U5 IOSTANDARD LVCMOS33 DRIVE 8 SLEW SLOW} [get_ports {o_sck_rx}]
+
+set_property -dict {PACKAGE_PIN N3 IOSTANDARD LVCMOS33 DRIVE 8 SLEW SLOW} [get_ports {o_DAC_SCLK}]
+set_property -dict {PACKAGE_PIN L5 IOSTANDARD LVCMOS33 DRIVE 8 SLEW SLOW} [get_ports {o_DAC_SYNC_n}]
+set_property -dict {PACKAGE_PIN N4 IOSTANDARD LVCMOS33 DRIVE 8 SLEW SLOW} [get_ports {o_DAC_DIN}]
