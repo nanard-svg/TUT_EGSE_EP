@@ -10,11 +10,14 @@ entity EP is
         i_clk_slow                : in  std_logic;
         i_clk_fast                : in  std_logic;
         i_reset                   : in  std_logic;
+        -- ADC survey
+        --i_data_rx_keeped          : in  signed(15 downto 0);
         -- global select spectrum
         i_clk_synchro_spectrum    : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         --input param
         i_gain                    : in  unsigned(31 downto 0);
+        i_TH_ADC                  : in  std_logic_vector(31 downto 0);
         i_TH_rise                 : in  std_logic_vector(31 downto 0);
         i_TH_fall                 : in  std_logic_vector(31 downto 0);
         i_enable_erase            : in  std_logic;
@@ -46,6 +49,7 @@ architecture RTL of EP is
     signal ready_after_filter : std_logic;
     signal data_after_gain    : signed(15 downto 0);
     signal ready_after_gain   : std_logic;
+    --signal data_rx_keeped     : signed(15 downto 0);
 
 begin
 
@@ -131,7 +135,10 @@ begin
         port map(
             i_clk_slow              => i_clk_slow,
             i_reset                 => i_reset,
+            -- ADC survey
+            i_data_before_filter    => data_before_filter,
             i_data_after_filter     => data_after_gain,
+            i_TH_ADC                => i_TH_ADC,
             i_TH_rise               => i_TH_rise,
             i_TH_fall               => i_TH_fall,
             o_Energy_level_max      => Energy_level_max,

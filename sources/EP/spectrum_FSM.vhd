@@ -172,7 +172,10 @@ begin
 
                     o_pipe_out_spectrum_wr_en <= '0';
                     state                     <= init_ram_work;
+                    o_we                      <= '1';
+                    o_en                      <= '1';
                     addr                      <= (others => '1');
+                    o_di                      <= (others => '0');
 
                 --                when end_to_gse =>
                 --

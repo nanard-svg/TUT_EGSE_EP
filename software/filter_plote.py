@@ -17,7 +17,7 @@ list_array_pipe_out_LSB = []
 param_vals=0
 
 
-file_names = ['1_MSB.txt','2_MSB.txt','3_MSB.txt','4_MSB.txt','5_MSB.txt','6_MSB.txt']
+file_names = ['1.txt','2.txt','3.txt','4.txt','5.txt','6.txt']
 
 for file_name in file_names:
 #################################### read file from list name ##########################################

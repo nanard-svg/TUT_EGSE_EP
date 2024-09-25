@@ -121,6 +121,7 @@ architecture arch of TUT_EGSE is
 
     signal TH_rise      : std_logic_vector(31 downto 0);
     signal TH_fall      : std_logic_vector(31 downto 0);
+    signal TH_ADC       : std_logic_vector(31 downto 0);
     signal enable_erase : std_logic;
 
     signal pipe_out_spectrum_rd_en         : STD_LOGIC_VECTOR(1 downto 0);
@@ -146,8 +147,9 @@ architecture arch of TUT_EGSE is
     signal count_clock_1KHz : unsigned(15 downto 0);
     signal clk_1KHz         : std_logic;
 
-    signal cmpt_sequencer   : unsigned (14 downto 0);
+    signal cmpt_sequencer    : unsigned(14 downto 0);
     signal enable_clock_1KHz : std_logic;
+    signal TH_ADC_wire : std_logic_vector(31 downto 0);
 
     --signal ep23wire : std_logic_vector(31 downto 0);
     --signal ep24wire : std_logic_vector(31 downto 0);
@@ -279,15 +281,13 @@ begin
     begin
         if reset = '1' then
             cmpt_sequencer <= (others => '0');
-            
+
         elsif rising_edge(sys_clk) then
             cmpt_sequencer <= cmpt_sequencer + 1;
         end if;
     end process;
 
-
-    enable_clock_1KHz <= cmpt_sequencer(14) and cmpt_sequencer(13) and cmpt_sequencer(12) and cmpt_sequencer(11) and cmpt_sequencer(10) and cmpt_sequencer(9) and
-    cmpt_sequencer(8) and cmpt_sequencer(7) and cmpt_sequencer(6) and cmpt_sequencer(5) and cmpt_sequencer(4) and cmpt_sequencer(3) and cmpt_sequencer(2) and cmpt_sequencer(1) and cmpt_sequencer(0);
+    enable_clock_1KHz <= cmpt_sequencer(14) and cmpt_sequencer(13) and cmpt_sequencer(12) and cmpt_sequencer(11) and cmpt_sequencer(10) and cmpt_sequencer(9) and cmpt_sequencer(8) and cmpt_sequencer(7) and cmpt_sequencer(6) and cmpt_sequencer(5) and cmpt_sequencer(4) and cmpt_sequencer(3) and cmpt_sequencer(2) and cmpt_sequencer(1) and cmpt_sequencer(0);
 
     ------------------------------------------
     --  global conf
@@ -412,11 +412,14 @@ begin
                 i_clk_slow                => sys_clk,
                 i_clk_fast                => clk_32Mhz,
                 i_reset                   => reset,
+                -- ADC survey
+                --i_data_rx_keeped          => signed(data_rx_keeped),
                 -- global select spectrum
                 i_clk_synchro_spectrum    => clk_synchro_spectrum,
                 i_filter_number           => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
                 i_gain                    => unsigned(gain(N)),
+                i_TH_ADC                  => TH_ADC,
                 i_TH_rise                 => TH_rise,
                 i_TH_fall                 => TH_fall,
                 i_enable_erase            => enable_erase,
@@ -637,6 +640,19 @@ begin
         end process;
     end generate generate_label_process_inter_wire;
 
+--    ------------------------------------------
+--    --  wire input init  
+--    ------------------------------------------
+--
+--    label_process_inter_wire : process(sys_clk, reset) is
+--    begin
+--        if reset = '1' then
+--        TH_ADC <= x"00007FFF";
+--        elsif rising_edge(sys_clk) then
+--            TH_ADC <= TH_ADC_wire;
+--        end if;
+--    end process;
+
     --ep25wire <= spectrum_count_pulse(1);
 
     ------------------------------------------
@@ -659,6 +675,8 @@ begin
     ep05 : okWireIn port map(okHE => okHE, ep_addr => x"05", ep_dataout => gain(1));
     --  level DAC121S 
     ep06 : okWireIn port map(okHE => okHE, ep_addr => x"06", ep_dataout => level_DAC121S);
+    --  level TH_ADC
+    ep07 : okWireIn port map(okHE => okHE, ep_addr => x"07", ep_dataout => TH_ADC);
 
     --  read wire out for FIFO pipe out science.
     ep20 : okWireOut port map(okHE => okHE, okEH => okEHx(1 * 65 - 1 downto 0 * 65), ep_addr => x"20", ep_datain => ep20wire(0));

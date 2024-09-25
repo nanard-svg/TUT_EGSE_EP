@@ -129,6 +129,11 @@ class DESTester:
         self.xem.SetWireInValue(0x03, TH_fall)
         self.xem.UpdateWireIns()
 
+    def setwire_TH_ADC(self, TH_ADC):
+
+        self.xem.SetWireInValue(0x07, TH_ADC)
+        self.xem.UpdateWireIns()
+
     def setwire_gain_filtre0(self,gain_filtre0):
 
         self.xem.SetWireInValue(0x04, gain_filtre0)
@@ -502,29 +507,38 @@ des.setwire()
 
 print ("set trigger_TH_rise")
 #level_trig=0xFFFF8EB8
-TH_rise=62*32
+TH_rise=30*32
 TH_rise=int(np.uint32(TH_rise))
 print(TH_rise)
 des.setwire_TH_rise(TH_rise)
 
 print ("set trigger_TH_fall")
 #level_trig=0xFFFF8EB8
-TH_fall=62*32
+TH_fall=30*32
 TH_fall=int(np.uint32(TH_fall))
 print(TH_fall)
 des.setwire_TH_fall(TH_fall)
 
-valeur = 2
+print ("set trigger_TH_ADC")
+#level_trig=0xFFFF8EB8
+TH_ADC=700*32
+TH_ADC=int(np.uint32(TH_ADC))
+print(TH_ADC)
+des.setwire_TH_ADC(TH_ADC)
+
+valeur = 1
 print("get_gain_filtre0:", valeur)
 gain_filtre0 = int(math.log2(int(valeur)))
 des.setwire_gain_filtre0(gain_filtre0)
 print(gain_filtre0)
 
-valeur = 2
+valeur = 1
 print("get_gain_filtre1:", valeur)
 gain_filtre1 = int(math.log2(int(valeur)))
 des.setwire_gain_filtre1(gain_filtre1)
 print(gain_filtre0)
+
+
 
 ###################################  START CAPTURE  ###############################################
 

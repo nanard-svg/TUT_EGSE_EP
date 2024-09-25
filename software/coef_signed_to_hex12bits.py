@@ -7,7 +7,7 @@ import numpy as np
 def signed_int_to_hex_12bits (nb_int_16):
 
     # convertion en hexa signé
-    if nb_int_16 > 65536-1 or nb_int_16 < -65536 :
+    if nb_int_16 > 4096-1 or nb_int_16 < -4096 :
         result_formated = "ERROR"
         print("ERROR")
         print(nb_int_16)
@@ -17,7 +17,7 @@ def signed_int_to_hex_12bits (nb_int_16):
             result = hex(nb_int_16)
 
         if nb_int_16 < 0 :
-            result = hex(0xFFFF+nb_int_16+1)
+            result = hex(0xFFF+nb_int_16+1)
 
         if len(result) == 3:
             result_formated = "00" + result[-1:]
@@ -73,7 +73,7 @@ indice_impaire = 1
 indice_paire = 0
 
 print ("int to hex")
-file_name_out = f"coef_V2.txt"
+file_name_out = f"signal.txt"
 file = open(file_name_out, "r")
 lines = file.readlines()
 indice_impaire = indice_impaire + 2
@@ -85,10 +85,11 @@ for elm in lines :
     #print(formated_lines_before)
 
 for elm in formated_lines_before :
-    formated_lines_hex_before.append((signed_int_to_hex_12bits(round(elm))))
-    print(formated_lines_hex_before)
+    formated_lines_hex_before.append((signed_int_to_hex_12bits(round(elm/32))))
+    #formated_lines_hex_before.append((signed_int_to_hex_12bits(round(elm))))
+    #print(formated_lines_hex_before)
 
-file_name_out = f"hex_coef_V2.txt"
+file_name_out = f"hex_in_file.txt"
 file = open(file_name_out, "w")
 for items in formated_lines_hex_before:
     file.write('%s\n' % items)

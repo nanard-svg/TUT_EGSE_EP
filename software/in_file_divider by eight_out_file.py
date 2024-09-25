@@ -4,7 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 
-print ("divider by eight")
+print ("divider by 16")
 file_name_out = f"in_file.txt"
 file = open(file_name_out, "r")
 lines = file.readlines()
@@ -17,7 +17,7 @@ for elm in lines :
     #print(formated_lines_before)
 
 for elm in formated_lines_before :
-    formated_lines_hex_before.append((round(elm/8)))
+    formated_lines_hex_before.append((round(elm/16)))
     #print(formated_lines_hex_before)
 
 file_name_out = f"out_file.txt"

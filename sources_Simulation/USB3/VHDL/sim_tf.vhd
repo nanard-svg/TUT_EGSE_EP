@@ -1049,6 +1049,11 @@ begin
 
         wait for 10 us;
         -- apply all
+        SetWireInValue(x"07", x"0000_7D00", NO_MASK); -- set TH_ADC_sat
+        UpdateWireIns;
+
+        wait for 10 us;
+        -- apply all
         SetWireInValue(x"02", x"0000_0100", NO_MASK); -- set TH_rise
         UpdateWireIns;
 
@@ -1064,17 +1069,23 @@ begin
         -- apply all
         SetWireInValue(x"05", x"0000_0000", NO_MASK); -- gain filter 1
         UpdateWireIns;
-        
-        -- apply DAc setting
-        SetWireInValue(x"06", x"0000_00AA", NO_MASK); -- gain filter 0
+
+        wait for 700 us;        
+         -- apply all
+        SetWireInValue(x"07", x"0000_7FFF", NO_MASK); -- set TH_ADC_sat
         UpdateWireIns;
+
 
         -- apply DAc setting
         SetWireInValue(x"06", x"0000_00AA", NO_MASK); -- gain filter 0
+        UpdateWireIns;  
+
+        -- apply DAc setting
+        SetWireInValue(x"06", x"0000_00AA", NO_MASK); -- set DAC
         UpdateWireIns;
 
         wait for 20000 us;
-        SetWireInValue(x"06", x"0000_0055", NO_MASK); -- gain filter 0
+        SetWireInValue(x"06", x"0000_0055", NO_MASK); -- set DAC
         UpdateWireIns;
 
         wait for 500 us;
