@@ -25,7 +25,7 @@ entity EP is
         i_ready_CDC               : in  std_logic;
         i_data_CDC                : in  signed(15 downto 0);
         -- out
-        o_data_after_gain         : out signed(15 downto 0);
+        --o_data_after_gain         : out signed(15 downto 0);
         o_ready_after_gain        : out std_logic;
         --coef
         i_coef_fir                : in  Array_config_32x16_type;
@@ -34,7 +34,9 @@ entity EP is
         -- out spectrum to fifo pipe out
         o_pipe_out_spectrum_din   : out std_logic_vector(31 downto 0);
         o_pipe_out_spectrum_wr_en : out std_logic;
-        o_spectrum_count_pulse    : out std_logic_vector(31 downto 0)
+        o_spectrum_count_pulse    : out std_logic_vector(31 downto 0);
+        --
+        o_data_after_energy_level : out signed(15 downto 0)
     );
 end entity EP;
 
@@ -124,7 +126,7 @@ begin
             o_ready_after_gain   => ready_after_gain
         );
 
-    o_data_after_gain  <= data_after_gain;
+    --o_data_after_gain  <= data_after_gain;
     o_ready_after_gain <= ready_after_gain;
 
     ------------------------------------------
@@ -133,16 +135,18 @@ begin
 
     label_energy_level : entity work.Energy_level
         port map(
-            i_clk_slow              => i_clk_slow,
-            i_reset                 => i_reset,
+            i_clk_slow                => i_clk_slow,
+            i_reset                   => i_reset,
             -- ADC survey
-            i_data_before_filter    => data_before_filter,
-            i_data_after_filter     => data_after_gain,
-            i_TH_ADC                => i_TH_ADC,
-            i_TH_rise               => i_TH_rise,
-            i_TH_fall               => i_TH_fall,
-            o_Energy_level_max      => Energy_level_max,
-            o_readyEnergy_level_max => readyEnergy_level_max
+            i_data_before_filter      => data_before_filter,
+            i_data_after_filter       => data_after_gain,
+            i_TH_ADC                  => i_TH_ADC,
+            i_TH_rise                 => i_TH_rise,
+            i_TH_fall                 => i_TH_fall,
+            o_Energy_level_max        => Energy_level_max,
+            o_readyEnergy_level_max   => readyEnergy_level_max,
+            i_data_after_gain         => data_after_gain,
+            o_data_after_energy_level => o_data_after_energy_level
         );
 
     ------------------------------------------

@@ -138,7 +138,8 @@ architecture arch of TUT_EGSE is
     signal injection_started            : std_logic;
     signal continuous_injection         : std_logic;
     signal gain                         : Array_config_32stdx2_type;
-    signal data_after_gain              : Array_config_16signedx2_type;
+    --signal data_after_gain              : Array_config_16signedx2_type;
+    signal data_after_energy_level      : Array_config_16signedx2_type;
 
     signal Start            : std_logic;
     signal Num_Data         : std_logic_vector(11 downto 0);
@@ -149,7 +150,7 @@ architecture arch of TUT_EGSE is
 
     signal cmpt_sequencer    : unsigned(14 downto 0);
     signal enable_clock_1KHz : std_logic;
-    signal TH_ADC_wire : std_logic_vector(31 downto 0);
+    signal TH_ADC_wire       : std_logic_vector(31 downto 0);
 
     --signal ep23wire : std_logic_vector(31 downto 0);
     --signal ep24wire : std_logic_vector(31 downto 0);
@@ -427,7 +428,7 @@ begin
                 i_ready_CDC               => i_ready_CDC,
                 i_data_CDC                => i_data_CDC,
                 -- out view 
-                o_data_after_gain         => data_after_gain(N),
+                --o_data_after_gain         => data_after_gain(N),
                 o_ready_after_gain        => ready_after_gain(N),
                 -- input coef filter
                 i_coef_fir                => coef_fir(N),
@@ -437,7 +438,8 @@ begin
                 -- out spectrum to fifo pipe out
                 o_pipe_out_spectrum_din   => pipe_out_spectrum_din(N),
                 o_pipe_out_spectrum_wr_en => pipe_out_spectrum_wr_en(N),
-                o_spectrum_count_pulse    => spectrum_count_pulse(N)
+                o_spectrum_count_pulse    => spectrum_count_pulse(N),
+                o_data_after_energy_level => data_after_energy_level(N)
             );
     end generate generate_EP;
 
@@ -481,7 +483,7 @@ begin
     end generate generate_label_FSM_raw_data;
 
     generate_din_fifo_raw_data : for N IN 1 downto 0 generate
-        label_din_fifo_raw_data : din_fifo_raw_data(N) <= data_after_gain(N) & data_before_filter(N);
+        label_din_fifo_raw_data : din_fifo_raw_data(N) <= data_after_energy_level(N) & data_before_filter(N);
     end generate generate_din_fifo_raw_data;
 
     ------------------------------------------
@@ -640,18 +642,18 @@ begin
         end process;
     end generate generate_label_process_inter_wire;
 
---    ------------------------------------------
---    --  wire input init  
---    ------------------------------------------
---
---    label_process_inter_wire : process(sys_clk, reset) is
---    begin
---        if reset = '1' then
---        TH_ADC <= x"00007FFF";
---        elsif rising_edge(sys_clk) then
---            TH_ADC <= TH_ADC_wire;
---        end if;
---    end process;
+    --    ------------------------------------------
+    --    --  wire input init  
+    --    ------------------------------------------
+    --
+    --    label_process_inter_wire : process(sys_clk, reset) is
+    --    begin
+    --        if reset = '1' then
+    --        TH_ADC <= x"00007FFF";
+    --        elsif rising_edge(sys_clk) then
+    --            TH_ADC <= TH_ADC_wire;
+    --        end if;
+    --    end process;
 
     --ep25wire <= spectrum_count_pulse(1);
 

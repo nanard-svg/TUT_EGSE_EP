@@ -521,18 +521,18 @@ des.setwire_TH_fall(TH_fall)
 
 print ("set trigger_TH_ADC")
 #level_trig=0xFFFF8EB8
-TH_ADC=700*32
+TH_ADC=1020*32
 TH_ADC=int(np.uint32(TH_ADC))
 print(TH_ADC)
 des.setwire_TH_ADC(TH_ADC)
 
-valeur = 1
+valeur = 2
 print("get_gain_filtre0:", valeur)
 gain_filtre0 = int(math.log2(int(valeur)))
 des.setwire_gain_filtre0(gain_filtre0)
 print(gain_filtre0)
 
-valeur = 1
+valeur = 2
 print("get_gain_filtre1:", valeur)
 gain_filtre1 = int(math.log2(int(valeur)))
 des.setwire_gain_filtre1(gain_filtre1)
