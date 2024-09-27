@@ -521,7 +521,7 @@ des.setwire_TH_fall(TH_fall)
 
 print ("set trigger_TH_ADC")
 #level_trig=0xFFFF8EB8
-TH_ADC=1020*32
+TH_ADC=900*32
 TH_ADC=int(np.uint32(TH_ADC))
 print(TH_ADC)
 des.setwire_TH_ADC(TH_ADC)

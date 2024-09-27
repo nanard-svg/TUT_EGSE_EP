@@ -1063,11 +1063,11 @@ begin
         UpdateWireIns;
 
         -- apply all
-        SetWireInValue(x"04", x"0000_0000", NO_MASK); -- gain filter 0
+        SetWireInValue(x"04", x"0000_0004", NO_MASK); -- gain filter 0
         UpdateWireIns;
 
         -- apply all
-        SetWireInValue(x"05", x"0000_0000", NO_MASK); -- gain filter 1
+        SetWireInValue(x"05", x"0000_0004", NO_MASK); -- gain filter 1
         UpdateWireIns;
 
         wait for 700 us;        
