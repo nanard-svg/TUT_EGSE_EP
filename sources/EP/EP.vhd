@@ -20,7 +20,7 @@ entity EP is
         i_TH_ADC                  : in  std_logic_vector(31 downto 0);
         i_TH_rise                 : in  std_logic_vector(31 downto 0);
         i_TH_fall                 : in  std_logic_vector(31 downto 0);
-        i_enable_erase            : in  std_logic;
+        -- i_enable_erase            : in  std_logic;
         -- input
         i_ready_CDC               : in  std_logic;
         i_data_CDC                : in  signed(15 downto 0);
@@ -162,7 +162,7 @@ begin
             i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
             i_filter_number           => i_filter_number,
             -- input from detect Energy level
-            i_enable_erase            => i_enable_erase,
+            -- i_enable_erase            => i_enable_erase,
             i_Energy_level_max        => Energy_level_max,
             i_readyEnergy_level_max   => readyEnergy_level_max,
             -- out spectrum to fifo pipe out

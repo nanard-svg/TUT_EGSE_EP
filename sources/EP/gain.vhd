@@ -68,7 +68,7 @@ begin
                 if data_after_gain < 32768 then
                     o_data_after_gain <= resize(signed(data_after_gain), 16);
                 else
-                    o_data_after_gain <= To_signed(32735, 16);
+                    o_data_after_gain <= To_signed(32759, 16);
                 end if;
 
             end if;

@@ -41,13 +41,13 @@ def save_signal_in_file (Signal_out) :
 
 ############################### classe OK
 
-array_pipe_out = np.ones(1028).astype(int)
+array_pipe_out = np.ones(4100).astype(int)
 list_array_pipe_out_MSB = []
 list_array_pipe_out_LSB = []
 list_array_pipe_out1_MSB = []
 list_array_pipe_out1_LSB = []
-Spectre = [0 for i in range(0, 1024)]
-Spectre1 = [0 for i in range(0, 1024)]
+Spectre = [0 for i in range(0, 4096)]
+Spectre1 = [0 for i in range(0, 4096)]
 
 
 #################################### global setting ######################################
@@ -178,7 +178,7 @@ def delay_end(fig):
     adress_wire_out_science = 0x24  # filter 1
     des.getwire(adress_wire_out_science)
 
-    if get == 1028 :
+    if get == 4100 :
         print("read pointer spectrum filter 1 : {}".format(get))
         #print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
         adresse_pipe_out_read = 0xA4         #filter1
@@ -188,7 +188,7 @@ def delay_end(fig):
         adress_wire_out_science = 0x21  # filter 0
         des.getwire(adress_wire_out_science)
 
-        if get == 1028:
+        if get == 4100:
             print("read pointer spectrum filter 0 : {}".format(get))
             # print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
             adresse_pipe_out_read = 0xA2  # filter1
@@ -238,8 +238,8 @@ def delay_end(fig):
 
         if init_spectrum == True :
 
-            Spectre = [0 for i in range(0, 1024)]
-            Spectre1 = [0 for i in range(0, 1024)]
+            Spectre = [0 for i in range(0, 4096)]
+            Spectre1 = [0 for i in range(0, 4096)]
             init_spectrum = False
             # tk.messagebox.showinfo("showinfo", "init_spectrum = {}".format(init_spectrum))
 
@@ -313,7 +313,7 @@ def close() :
     racine.quit()
 
 # def clear_vect(Spectre):
-    # Spectre = [0 for i in range(0, 1024)]
+    # Spectre = [0 for i in range(0, 4096)]
     # print("####################################################################################################")
 
 
@@ -328,7 +328,7 @@ def Injection() :
     print("injection")
     des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
 
-    file_name = open('Signal_ADC_20keV.txt', "r")
+    file_name = open('Signal_ADC_400keV.txt', "r")
     lines = file_name.readlines()
     formated_lines = []
     for elm in lines:
@@ -361,14 +361,14 @@ def ADC() :
 def get_entry_TH(event) :
     valeur = v.get()
     print("get_entry_TH:",valeur)
-    TH_rise = int(valeur)*32
+    TH_rise = int(valeur)*8
     des.setwire_TH_rise(TH_rise)
     print(TH_rise)
 
 def get_entry_TL(event) :
     valeur = v1.get()
     print("get_entry_TL:",valeur)
-    TH_fall = int(valeur)*32
+    TH_fall = int(valeur)*8
     des.setwire_TH_fall(TH_fall)
     print(TH_fall)
 
@@ -425,13 +425,13 @@ b7.pack()
 b6.pack()
 #b8.pack()
 
-label = tk.Label(racine, text="level pulse rising : 1->1024")
+label = tk.Label(racine, text="level pulse rising : 1->4096")
 v = tk.Entry( racine, text="get_entry_TH", bd = 5 )
 label.pack()
 v.pack()  # pack l'ojb à gui
 v.bind('<Return>', get_entry_TH)
 
-label = tk.Label(racine, text="level pulse falling < level pulse rising  : 1->1024")
+label = tk.Label(racine, text="level pulse falling < level pulse rising  : 1->4096")
 v1 = tk.Entry( racine, text="get_entry_TL", bd = 5 )
 label.pack()
 v1.pack()  # pack l'ojb à gui
@@ -507,21 +507,21 @@ des.setwire()
 
 print ("set trigger_TH_rise")
 #level_trig=0xFFFF8EB8
-TH_rise=30*32
+TH_rise=500*8
 TH_rise=int(np.uint32(TH_rise))
 print(TH_rise)
 des.setwire_TH_rise(TH_rise)
 
 print ("set trigger_TH_fall")
 #level_trig=0xFFFF8EB8
-TH_fall=30*32
+TH_fall=250*8
 TH_fall=int(np.uint32(TH_fall))
 print(TH_fall)
 des.setwire_TH_fall(TH_fall)
 
 print ("set trigger_TH_ADC")
 #level_trig=0xFFFF8EB8
-TH_ADC=900*32
+TH_ADC=4094*8
 TH_ADC=int(np.uint32(TH_ADC))
 print(TH_ADC)
 des.setwire_TH_ADC(TH_ADC)

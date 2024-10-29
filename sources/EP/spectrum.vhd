@@ -11,7 +11,7 @@ entity spectrum is
         i_clk_synchro_spectrum    : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         -- input from detect Energy level
-        i_enable_erase            : in  std_logic;
+        -- i_enable_erase            : in  std_logic;
         i_Energy_level_max        : in  signed(15 downto 0);
         i_readyEnergy_level_max   : in  std_logic;
         -- out spectrum to fifo pipe out
@@ -24,7 +24,7 @@ end entity spectrum;
 architecture RTL of spectrum is
 
     -- RAM 
-    type Array_addr_type is array (1 downto 0) of std_logic_vector(9 downto 0);
+    type Array_addr_type is array (1 downto 0) of std_logic_vector(11 downto 0);
     signal addr : Array_addr_type;
     type Array_di_type is array (1 downto 0) of std_logic_vector(15 downto 0);
     signal di   : Array_di_type;
@@ -48,17 +48,30 @@ begin
     -- File: rams_sp_nc.vhd 
     ------------------------------------------
 
-    generate_RAM : for N IN 1 downto 0 generate
-        label_rame_one : entity work.rams_sp_rf
+    --    generate_RAM : for N IN 1 downto 0 generate
+    --        label_rame_one : entity work.rams_sp_rf
+    --            port map(
+    --                clk  => i_clk_slow,
+    --                we   => we(N),
+    --                en   => en(N),
+    --                addr => addr(N),
+    --                di   => di(N),
+    --                do   => do(N)
+    --            );
+    --    end generate generate_RAM;
+
+    generate_ram_sp_rf_4k : for N IN 1 downto 0 generate
+        label_ram_sp_rf_4k : entity work.ram_sp_rf_4k
             port map(
-                clk  => i_clk_slow,
-                we   => we(N),
-                en   => en(N),
-                addr => addr(N),
-                di   => di(N),
-                do   => do(N)
+                reset  => i_reset,
+                i_clk  => i_clk_slow,
+                i_we   => we(N),
+                i_en   => en(N),
+                i_addr => addr(N),
+                i_di   => di(N),
+                o_do   => do(N)
             );
-    end generate generate_RAM;
+    end generate generate_ram_sp_rf_4k;
 
     ------------------------------------------
     -- 
@@ -76,7 +89,7 @@ begin
                 -- synchro_spectrum
                 i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
                 i_set_synchro_spectrum    => std_logic_vector(To_unsigned(N, 1)),
-                i_enable_erase            => i_enable_erase,
+                -- i_enable_erase            => i_enable_erase,
                 -- RAM
                 o_we                      => we(N),
                 o_en                      => en(N),

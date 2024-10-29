@@ -119,16 +119,16 @@ architecture arch of TUT_EGSE is
     signal data_rx_keeped  : std_logic_vector(15 downto 0);
     signal ready_rx_keeped : std_logic;
 
-    signal TH_rise      : std_logic_vector(31 downto 0);
-    signal TH_fall      : std_logic_vector(31 downto 0);
-    signal TH_ADC       : std_logic_vector(31 downto 0);
-    signal enable_erase : std_logic;
+    signal TH_rise : std_logic_vector(31 downto 0);
+    signal TH_fall : std_logic_vector(31 downto 0);
+    signal TH_ADC  : std_logic_vector(31 downto 0);
+    --signal enable_erase : std_logic;
 
     signal pipe_out_spectrum_rd_en         : STD_LOGIC_VECTOR(1 downto 0);
     signal pipe_out_spectrum_dout          : Array_config_32stdx2_type;
     signal pipe_out_spectrum_din           : Array_config_32stdx2_type;
     signal pipe_out_spectrum_wr_en         : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_rd_data_count_spectrum : Array_config_11stdx2_type;
+    signal pipe_out_rd_data_count_spectrum : Array_config_13stdx2_type;
     signal pipe_out_spectrum_wr_en_fifo    : STD_LOGIC_VECTOR(1 downto 0);
     signal pipe_out_spectrum_din_fifo      : Array_config_32stdx2_type;
     signal spectrum_count_pulse            : Array_config_32stdx2_type;
@@ -150,7 +150,7 @@ architecture arch of TUT_EGSE is
 
     signal cmpt_sequencer    : unsigned(14 downto 0);
     signal enable_clock_1KHz : std_logic;
-    signal TH_ADC_wire       : std_logic_vector(31 downto 0);
+    --signal TH_ADC_wire       : std_logic_vector(31 downto 0);
 
     --signal ep23wire : std_logic_vector(31 downto 0);
     --signal ep24wire : std_logic_vector(31 downto 0);
@@ -158,14 +158,14 @@ architecture arch of TUT_EGSE is
 
 begin
 
-    led(7)   <= '0' when (led_buf(7) = '1') else 'Z';
-    led(6)   <= '0' when (led_buf(6) = '1') else 'Z';
-    led(5)   <= '0' when (led_buf(5) = '1') else 'Z';
-    led(4)   <= '0' when (led_buf(4) = '1') else 'Z';
-    led(3)   <= '0' when (led_buf(3) = '1') else 'Z';
-    led(2)   <= '0' when (led_buf(2) = '1') else 'Z';
-    led(1)   <= '0' when (led_buf(1) = '1') else 'Z';
-    led(0)   <= '0' when (led_buf(0) = '1') else 'Z';
+    led(7) <= '0' when (led_buf(7) = '1') else 'Z';
+    led(6) <= '0' when (led_buf(6) = '1') else 'Z';
+    led(5) <= '0' when (led_buf(5) = '1') else 'Z';
+    led(4) <= '0' when (led_buf(4) = '1') else 'Z';
+    led(3) <= '0' when (led_buf(3) = '1') else 'Z';
+    led(2) <= '0' when (led_buf(2) = '1') else 'Z';
+    led(1) <= '0' when (led_buf(1) = '1') else 'Z';
+    led(0) <= '0' when (led_buf(0) = '1') else 'Z';
     o_sck_rx <= i_sck_rx;
     ------------------------------------------
     --  LED
@@ -300,7 +300,7 @@ begin
     i_Start_Capture(1) <= ep00wire(1);
 
     reset                <= (not locked) or reset_wire;
-    enable_erase         <= ep00wire(30);
+    --enable_erase         <= ep00wire(30);
     continuous_injection <= ep00wire(29);
 
     ------------------------------------------
@@ -358,10 +358,6 @@ begin
             o_data                 => data_fast_injection,
             o_ready                => ready_fast_injection
         );
-
-    ------------------------------------------
-    --  ADC to keeper
-    ------------------------------------------  
 
     label_read_ADC : entity work.Rx_fe_ads7049_and
         port map(
@@ -423,7 +419,7 @@ begin
                 i_TH_ADC                  => TH_ADC,
                 i_TH_rise                 => TH_rise,
                 i_TH_fall                 => TH_fall,
-                i_enable_erase            => enable_erase,
+                -- i_enable_erase            => enable_erase,
                 -- input Data science
                 i_ready_CDC               => i_ready_CDC,
                 i_data_CDC                => i_data_CDC,
@@ -564,7 +560,7 @@ begin
     --  FIFO pipe_out spectrum
     ------------------------------------------
     generate_fifo_pipe_out_specrum : for N IN 1 downto 0 generate
-        fifo_pipe_out_specrum : entity work.fifo_pipe_out_w32_2048_r32_2048
+        fifo_pipe_out_specrum : entity work.fifo_pipe_out_w32_4096_r32_4096
             port map(
                 rst           => reset,
                 wr_clk        => sys_clk,
@@ -633,7 +629,7 @@ begin
             --ep24wire <= (others => '0');
             elsif rising_edge(sys_clk) then
                 ep20wire(N) <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(N);
-                ep21wire(N) <= "000000000000000000000" & pipe_out_rd_data_count_spectrum(N);
+                ep21wire(N) <= "0000000000000000000" & pipe_out_rd_data_count_spectrum(N);
                 ep22wire(N) <= spectrum_count_pulse(N);
                 --ep23wire <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(1);
                 --ep24wire <= "000000000000000000000" & pipe_out_rd_data_count_spectrum(1);

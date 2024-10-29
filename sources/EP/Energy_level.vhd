@@ -91,7 +91,7 @@ begin
                     o_data_after_energy_level <= To_signed(32767, 16);
 
                     state                   <= event_saturating_waiting;
-                    o_Energy_level_max      <= "0111111111100000";
+                    o_Energy_level_max      <= "0111111111111000";
                     o_readyEnergy_level_max <= '1';
 
                 when event_saturating_waiting =>
