@@ -121,7 +121,7 @@ architecture RTL of FIR_filter is
     signal data30_out_mult : signed(31 downto 0);
     signal data31_out_mult : signed(31 downto 0);
 
-    signal sum               : signed(16 downto 0);
+    --signal sum               : signed(16 downto 0);
     signal enable_FIR_filter : std_logic;
     signal count             : unsigned(17 downto 0);
     signal count_inter_ready : unsigned(17 downto 0);
@@ -293,13 +293,13 @@ begin
     process(i_clk_slow, i_reset) is
     begin
         if i_reset = '1' then
-            sum     <= (others => '0');
+            o_data  <= (others => '0');
             o_ready <= '0';
 
         elsif rising_edge(i_clk_slow) then
-            if i_ready = '1' and i_coef_fir_ready = '1'  then
-			--if i_ready = '1' and i_coef_fir_ready = '1' and init_FIR_filter = '1' then
-                sum     <= (data0_out_mult(31) & data0_out_mult(31 downto 16)) + (data1_out_mult(31) & data1_out_mult(31 downto 16)) + (data2_out_mult(31) & data2_out_mult(31 downto 16)) + (data3_out_mult(31) & data3_out_mult(31 downto 16)) + (data4_out_mult(31) & data4_out_mult(31 downto 16)) + (data5_out_mult(31) & data5_out_mult(31 downto 16)) + (data6_out_mult(31) & data6_out_mult(31 downto 16)) + (data7_out_mult(31) & data7_out_mult(31 downto 16)) + (data8_out_mult(31) & data8_out_mult(31 downto 16)) + (data9_out_mult(31) & data9_out_mult(31 downto 16)) + (data10_out_mult(31) & data10_out_mult(31 downto 16)) + (data11_out_mult(31) & data11_out_mult(31 downto 16)) + (data12_out_mult(31) & data12_out_mult(31 downto 16)) + (data13_out_mult(31) & data13_out_mult(31 downto 16)) + (data14_out_mult(31) & data14_out_mult(31 downto 16)) + (data15_out_mult(31) & data15_out_mult(31 downto 16)) + (data16_out_mult(31) & data16_out_mult(31 downto 16)) + (data17_out_mult(31) & data17_out_mult(31 downto 16)) + (data18_out_mult(31) & data18_out_mult(31 downto 16)) + (data19_out_mult(31) & data19_out_mult(31 downto 16)) + (data20_out_mult(31) & data20_out_mult(31 downto 16)) + (data21_out_mult(31) & data21_out_mult(31 downto 16)) + (data22_out_mult(31) & data22_out_mult(31 downto 16)) + (data23_out_mult(31) & data23_out_mult(31 downto 16)) + (data24_out_mult(31) & data24_out_mult(31 downto 16)) + (data25_out_mult(31) & data25_out_mult(31 downto 16)) + (data26_out_mult(31) & data26_out_mult(31 downto 16)) + (data27_out_mult(31) & data27_out_mult(31 downto 16)) + (data28_out_mult(31) & data28_out_mult(31 downto 16)) + (data29_out_mult(31) & data29_out_mult(31 downto 16)) + (data30_out_mult(31) & data30_out_mult(31 downto 16)) + (data31_out_mult(31) & data31_out_mult(31 downto 16));
+            if i_ready = '1' and i_coef_fir_ready = '1' then
+                --if i_ready = '1' and i_coef_fir_ready = '1' and init_FIR_filter = '1' then
+                o_data  <= (data0_out_mult(31 downto 16)) + (data1_out_mult(31 downto 16)) + (data2_out_mult(31 downto 16)) + (data3_out_mult(31 downto 16)) + (data4_out_mult(31 downto 16)) + (data5_out_mult(31 downto 16)) + (data6_out_mult(31 downto 16)) + (data7_out_mult(31 downto 16)) + (data8_out_mult(31 downto 16)) + (data9_out_mult(31 downto 16)) + (data10_out_mult(31 downto 16)) + (data11_out_mult(31 downto 16)) + (data12_out_mult(31 downto 16)) + (data13_out_mult(31 downto 16)) + (data14_out_mult(31 downto 16)) + (data15_out_mult(31 downto 16)) + (data16_out_mult(31 downto 16)) + (data17_out_mult(31 downto 16)) + (data18_out_mult(31 downto 16)) + (data19_out_mult(31 downto 16)) + (data20_out_mult(31 downto 16)) + (data21_out_mult(31 downto 16)) + (data22_out_mult(31 downto 16)) + (data23_out_mult(31 downto 16)) + (data24_out_mult(31 downto 16)) + (data25_out_mult(31 downto 16)) + (data26_out_mult(31 downto 16)) + (data27_out_mult(31 downto 16)) + (data28_out_mult(31 downto 16)) + (data29_out_mult(31 downto 16)) + (data30_out_mult(31 downto 16)) + (data31_out_mult(31 downto 16));
                 o_ready <= i_ready;
             else
                 o_ready <= '0';
@@ -307,7 +307,7 @@ begin
         end if;
     end process;
 
-    o_data <= sum(15 downto 0);
+    --o_data <= sum(16 downto 1);
 
     -------------------------------------------------------------------
     -- unlock FIR filter
