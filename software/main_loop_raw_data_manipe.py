@@ -213,12 +213,13 @@ des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, re
 
 
 
-for c in range(100):
+for c in range(500):
 ################################### TEST fifo pipe out read pointer##############################################
     adress_wire_out_science = 0x20
     des.getwire(adress_wire_out_science)
     #while ((get != 1024) and (get != 512)):
-    while (get != 256) :
+    #while (get != 256) :
+    while (get != 128) :
         print("############################################")
         print("read pointer filter 0 0x20  {}".format(get))
         print("############################################")
@@ -232,7 +233,8 @@ for c in range(100):
     adress_wire_out_science = 0x23
     des.getwire(adress_wire_out_science)
     #while ((get != 1024) and (get != 512)):
-    while (get != 256) :
+    #while (get != 256) :
+    while (get != 128) :
         #print("############################################")
         print("read pointer filter 1 0x23   {}".format(get))
         #print("##############################################")
@@ -313,5 +315,14 @@ for c in range(100):
     plt.ylabel("amplitude")
     plt.show()
 
+adress_wire_out_science = 0x23
+des.getwire(adress_wire_out_science)
+print("read pointer filter 1 0x23 {}".format(get))
+array_pipe_out = np.ones(get).astype(int)
+adresse_pipe_out_read = 0xA3
+des.getpipeout(adresse_pipe_out_read)
+adress_wire_out_science = 0x23
+des.getwire(adress_wire_out_science)
+print("read pointer filter 1 0x23 {}".format(get))
 
 print("script done")

@@ -41,7 +41,8 @@ entity TUT_EGSE is
         -- DAC121S
         o_DAC_SCLK   : out   STD_LOGIC;
         o_DAC_SYNC_n : out   STD_LOGIC;
-        o_DAC_DIN    : out   STD_LOGIC
+        o_DAC_DIN    : out   STD_LOGIC;
+        o_DAC_on_off : out   STD_LOGIC
     );
 end TUT_EGSE;
 
@@ -99,6 +100,7 @@ architecture arch of TUT_EGSE is
 
     signal ready_after_gain             : STD_LOGIC_VECTOR(1 downto 0);
     signal wr_en_fifo_pipe_out_raw_data : STD_LOGIC_VECTOR(1 downto 0);
+    signal empty_raw_data               : std_logic;
     signal i_Start_Capture              : STD_LOGIC_VECTOR(1 downto 0);
     signal i_level_trigger              : STD_LOGIC_VECTOR(1 downto 0);
 
@@ -257,7 +259,7 @@ begin
             clk_synchro_spectrum   <= '0';
         elsif rising_edge(sys_clk) then
             count_synchro_spectrum <= count_synchro_spectrum + 1;
-            if To_integer(count_synchro_spectrum) >= 10000000 then
+            if To_integer(count_synchro_spectrum) >= 20000000 then
                 clk_synchro_spectrum   <= not clk_synchro_spectrum;
                 count_synchro_spectrum <= (others => '0');
             end if;
@@ -478,12 +480,28 @@ begin
                 --output
                 o_din_fifo_pipe_out_raw_data   => din_fifo_pipe_out_raw_data(N),
                 o_wr_en_fifo_pipe_out_raw_data => wr_en_fifo_pipe_out_raw_data(N),
-                i_empty_fifo_pipe_out_raw_data => empty_fifo_pipe_out_raw_data(N)
+                i_empty_fifo_pipe_out_raw_data => empty_raw_data
             );
     end generate generate_label_FSM_raw_data;
 
+    empty_raw_data <= empty_fifo_pipe_out_raw_data(0) and empty_fifo_pipe_out_raw_data(1);
+
+    --    generate_din_fifo_raw_data : for N IN 1 downto 0 generate
+    --        label_din_fifo_raw_data : din_fifo_raw_data(N) <= data_after_energy_level(N) & data_before_filter(N);
+    --    end generate generate_din_fifo_raw_data;
+
+    ------------------------------------------
+    --  process generate_din_fifo_raw_data
+    ------------------------------------------ 
     generate_din_fifo_raw_data : for N IN 1 downto 0 generate
-        label_din_fifo_raw_data : din_fifo_raw_data(N) <= data_after_energy_level(N) & data_before_filter(N);
+        label_trigger : process(sys_clk, reset) is
+        begin
+            if reset = '1' then
+                din_fifo_raw_data(N) <= (others => '0');
+            elsif rising_edge(sys_clk) then
+                din_fifo_raw_data(N) <= data_after_energy_level(N) & data_before_filter(N);
+            end if;
+        end process;
     end generate generate_din_fifo_raw_data;
 
     ------------------------------------------
@@ -521,6 +539,8 @@ begin
             o_DAC_SYNC_n => o_DAC_SYNC_n,
             o_DAC_DIN    => o_DAC_DIN
         );
+
+    o_DAC_on_off <= Num_Data(0);
 
     ------------------------------------------
     --  remote DAC121S101_Driver
