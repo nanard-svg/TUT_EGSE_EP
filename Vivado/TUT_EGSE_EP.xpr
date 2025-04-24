@@ -58,7 +58,7 @@
     <Option Name="IPUserFilesDir" Val="$PIPUSERFILESDIR"/>
     <Option Name="IPStaticSourceDir" Val="$PIPUSERFILESDIR/ipstatic"/>
     <Option Name="EnableBDX" Val="FALSE"/>
-    <Option Name="WTXSimLaunchSim" Val="553"/>
+    <Option Name="WTXSimLaunchSim" Val="559"/>
     <Option Name="WTModelSimLaunchSim" Val="0"/>
     <Option Name="WTQuestaLaunchSim" Val="0"/>
     <Option Name="WTIesLaunchSim" Val="0"/>
@@ -209,6 +209,12 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../sources/DAC/remote_DAC121S01_driver.vhd">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../sources/TOP/TUT_EGSE.vhd">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -340,6 +346,7 @@
         <Option Name="XSimWcfgFile" Val="$PPRDIR/../../TUT_EGSE_EP/Vivado/sim_tf_behav.wcfg"/>
         <Option Name="XSimWcfgFile" Val="$PPRDIR/../../TUT_EGSE_EP/Vivado/sim_tf_behav.wcfg"/>
         <Option Name="XSimWcfgFile" Val="$PPRDIR/../../TUT_EGSE_EP/Vivado/sim_tf_behav.wcfg"/>
+        <Option Name="XSimWcfgFile" Val="$PPRDIR/sim_tf_behav.wcfg"/>
         <Option Name="XSimWcfgFile" Val="$PPRDIR/sim_tf_behav.wcfg"/>
         <Option Name="XSimWcfgFile" Val="$PPRDIR/sim_tf_behav.wcfg"/>
       </Config>

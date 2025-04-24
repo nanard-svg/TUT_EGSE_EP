@@ -545,19 +545,15 @@ begin
     ------------------------------------------
     --  remote DAC121S101_Driver
     ------------------------------------------
-    label_remote_DAC121 : process(clk_1KHz, reset) is
-    begin
-        if reset = '1' then
-            Start    <= '0';
-            Num_Data <= (others => '0');
-        elsif rising_edge(clk_1KHz) then
-            Start <= '0';
-            if Num_Data /= level_DAC121S(11 downto 0) and Busy = '0' then
-                Start    <= '1';
-                Num_Data <= level_DAC121S(11 downto 0);
-            end if;
-        end if;
-    end process;
+    label_remote_DAC121S101_Driver : entity work.remote_DAC121S01_driver
+        port map(
+            i_Rst_n       => not reset,
+            i_Clk         => clk_1KHz,
+            o_Start       => Start,
+            i_Busy        => Busy,
+            o_Num_Data    => Num_Data,
+            level_DAC121S => level_DAC121S
+        );
 
     ------------------------------------------
     --  FIFO pipe_out data science
