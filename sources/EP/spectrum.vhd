@@ -9,6 +9,7 @@ entity spectrum is
         i_reset                   : in  std_logic;
         -- global select spectrum
         i_clk_synchro_spectrum    : in  std_logic;
+        i_enable_cycle_spectrum   : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         -- input from detect Energy level
         i_enable_erase            : in  std_logic;
@@ -75,6 +76,7 @@ begin
                 i_filter_number           => i_filter_number,
                 -- synchro_spectrum
                 i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
+                i_enable_cycle_spectrum   => i_enable_cycle_spectrum,
                 i_set_synchro_spectrum    => std_logic_vector(To_unsigned(N, 1)),
                 i_enable_erase            => i_enable_erase,
                 -- RAM

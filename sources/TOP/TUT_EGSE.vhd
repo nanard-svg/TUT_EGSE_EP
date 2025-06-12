@@ -63,8 +63,9 @@ architecture arch of TUT_EGSE is
     signal reset : std_logic;
     signal count : unsigned(31 downto 0);
 
-    signal count_synchro_spectrum : unsigned(26 downto 0);
-    signal clk_synchro_spectrum   : std_logic;
+    signal clk_synchro_spectrum : STD_LOGIC_VECTOR(1 downto 0);
+    signal enable_cycle_spectrum : STD_LOGIC_VECTOR(1 downto 0);
+    --signal clk_synchro_spectrum   : std_logic;
 
     -- pipe in
 
@@ -252,19 +253,32 @@ begin
     -- Cycle spectrum, DAC121S, integration time
     ------------------------------------------
 
-    label_Cycle_spectrum : process(sys_clk, reset) is
-    begin
-        if reset = '1' then
-            count_synchro_spectrum <= (others => '0');
-            clk_synchro_spectrum   <= '0';
-        elsif rising_edge(sys_clk) then
-            count_synchro_spectrum <= count_synchro_spectrum + 1;
-            if To_integer(count_synchro_spectrum) >= 20000000 then
-                clk_synchro_spectrum   <= not clk_synchro_spectrum;
-                count_synchro_spectrum <= (others => '0');
-            end if;
-        end if;
-    end process;
+    generate_cycle_spectrum : for N IN 1 downto 0 generate
+        label_cycle_spectrum : entity work.cycle_spectrum
+            port map(
+                sys_clk => sys_clk,
+                reset   => reset,
+                
+                i_detector_number   => To_unsigned(N, 1),
+                o_clk_synchro_spectrum => clk_synchro_spectrum(N),
+                o_enable_cycle_spectrum   => enable_cycle_spectrum(N)
+                
+            );
+    end generate generate_cycle_spectrum;
+
+--    label_Cycle_spectrum : process(sys_clk, reset) is
+--    begin
+--        if reset = '1' then
+--            count_synchro_spectrum <= (others => '0');
+--            clk_synchro_spectrum   <= '0';
+--        elsif rising_edge(sys_clk) then
+--            count_synchro_spectrum <= count_synchro_spectrum + 1;
+--            if To_integer(count_synchro_spectrum) >= 20000000 then
+--                clk_synchro_spectrum   <= not clk_synchro_spectrum;
+--                count_synchro_spectrum <= (others => '0');
+--            end if;
+--        end if;
+--    end process;
 
     label_clock_1KHz : process(sys_clk, reset) is
     begin
@@ -418,7 +432,8 @@ begin
                 -- ADC survey
                 --i_data_rx_keeped          => signed(data_rx_keeped),
                 -- global select spectrum
-                i_clk_synchro_spectrum    => clk_synchro_spectrum,
+                i_clk_synchro_spectrum    => clk_synchro_spectrum(N),
+                i_enable_cycle_spectrum   => enable_cycle_spectrum(N),
                 i_filter_number           => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
                 i_gain                    => unsigned(gain(N)),
@@ -558,7 +573,7 @@ begin
     ------------------------------------------
     --  FIFO pipe_out data science
     ------------------------------------------
-    generate_fifo_pipe_out_science : for N IN 1 downto 0 generate
+    generate_fifo_pipe_out_science_raw_data : for N IN 1 downto 0 generate
         fifo_pipe_out_science : entity work.fifo_pipe_out_w32_2048_r32_2048
             port map(
                 rst           => reset,
@@ -575,7 +590,7 @@ begin
                 wr_rst_busy   => open,
                 rd_rst_busy   => open
             );
-    end generate generate_fifo_pipe_out_science;
+    end generate generate_fifo_pipe_out_science_raw_data;
     ------------------------------------------
     --  FIFO pipe_out spectrum
     ------------------------------------------

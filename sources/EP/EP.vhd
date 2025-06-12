@@ -14,6 +14,7 @@ entity EP is
         --i_data_rx_keeped          : in  signed(15 downto 0);
         -- global select spectrum
         i_clk_synchro_spectrum    : in  std_logic;
+        i_enable_cycle_spectrum   : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         --input param
         i_gain                    : in  unsigned(31 downto 0);
@@ -160,6 +161,7 @@ begin
             i_reset                   => i_reset,
             -- global select spectrum
             i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
+            i_enable_cycle_spectrum   => i_enable_cycle_spectrum,
             i_filter_number           => i_filter_number,
             -- input from detect Energy level
             i_enable_erase            => i_enable_erase,

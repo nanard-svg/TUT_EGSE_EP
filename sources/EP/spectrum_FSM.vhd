@@ -10,6 +10,7 @@ entity spectrum_FSM is
         i_filter_number           : in  std_logic_vector(0 downto 0);
         -- synchro_spectrum
         i_clk_synchro_spectrum    : in  std_logic;
+        i_enable_cycle_spectrum   : in  std_logic;
         i_set_synchro_spectrum    : in  std_logic_vector(0 downto 0);
         i_enable_erase            : in  std_logic;
         -- RAM
@@ -82,20 +83,22 @@ begin
                     o_en <= '0';
                     o_we <= '0';
 
-                    if i_clk_synchro_spectrum = i_set_synchro_spectrum(0) then
-                        state         <= header_to_gse;
-                        TM_Byte_index <= 0;
-                        addr          <= (others => '0');
-                        old_addr      <= (others => '0');
-                        o_en          <= '0';
-                        o_we          <= '0';
+                    if i_enable_cycle_spectrum = '1' then
+                        if i_clk_synchro_spectrum = i_set_synchro_spectrum(0) then
+                            state         <= header_to_gse;
+                            TM_Byte_index <= 0;
+                            addr          <= (others => '0');
+                            old_addr      <= (others => '0');
+                            o_en          <= '0';
+                            o_we          <= '0';
 
-                    else
-                        if i_ready_energy_level_max = '1' then
-                            spectrum_count_pulse <= std_logic_vector(unsigned(spectrum_count_pulse) + 1);
-                            addr                 <= unsigned(i_energy_level_max(14 downto 5)); -- remove MSB(15) sign bit always 0
-                            o_en                 <= '1';
-                            state                <= read_ram;
+                        else
+                            if i_ready_energy_level_max = '1' then
+                                spectrum_count_pulse <= std_logic_vector(unsigned(spectrum_count_pulse) + 1);
+                                addr                 <= unsigned(i_energy_level_max(14 downto 5)); -- remove MSB(15) sign bit always 0
+                                o_en                 <= '1';
+                                state                <= read_ram;
+                            end if;
                         end if;
                     end if;
 
