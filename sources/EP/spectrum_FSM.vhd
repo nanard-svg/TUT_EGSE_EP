@@ -37,6 +37,7 @@ architecture RTL of spectrum_FSM is
     signal addr                 : unsigned(9 downto 0);
     signal old_addr             : unsigned(9 downto 0);
     signal spectrum_count_pulse : std_logic_vector(31 downto 0);
+    signal clk_synchro_spectrum : std_logic;
 
 begin
 
@@ -55,10 +56,12 @@ begin
             spectrum_count_pulse      <= (others => '0');
             o_spectrum_count_pulse    <= (others => '0');
             TM_Byte_index             <= 0;
-
+            clk_synchro_spectrum      <= '0';
         --stamp <= (others => '0');
 
         elsif rising_edge(i_clk_slow) then
+
+            clk_synchro_spectrum <= i_clk_synchro_spectrum;
 
             case state is
 
@@ -84,7 +87,7 @@ begin
                     o_we <= '0';
 
                     if i_enable_cycle_spectrum = '1' then
-                        if i_clk_synchro_spectrum = i_set_synchro_spectrum(0) then
+                        if clk_synchro_spectrum = i_set_synchro_spectrum(0) then
                             state         <= header_to_gse;
                             TM_Byte_index <= 0;
                             addr          <= (others => '0');

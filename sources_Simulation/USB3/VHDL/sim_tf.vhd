@@ -1054,12 +1054,12 @@ begin
 
         wait for 10 us;
         -- apply all
-        SetWireInValue(x"02", x"0000_0100", NO_MASK); -- set TH_rise
+        SetWireInValue(x"02", x"0000_0b80", NO_MASK); -- set TH_rise
         UpdateWireIns;
 
         wait for 10 us;
         -- apply all
-        SetWireInValue(x"03", x"0000_0100", NO_MASK); -- set TH_fall
+        SetWireInValue(x"03", x"0000_0a70", NO_MASK); -- set TH_fall
         UpdateWireIns;
 
         -- apply all

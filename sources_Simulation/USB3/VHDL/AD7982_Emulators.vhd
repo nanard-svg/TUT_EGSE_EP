@@ -47,9 +47,9 @@ begin
 
         --wait for 500 us;
 
-        wait until i_Rst_n = '1' and i_Rst_n'event;
+        wait until i_Rst_n = '0' and i_Rst_n'event;
         
-        wait for 1000 us;
+        wait for 19180 us;
 
         loop
 
