@@ -1,4 +1,3 @@
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -19,5 +18,8 @@ package UT_EGSE_EP_Package is
     type Array_config_16signedx2_type is array (1 downto 0) of signed(15 downto 0);
 
     type Array_config_32unsignedx2_type is array (1 downto 0) of signed(31 downto 0);
+
+--    constant memory_add_size : integer := 10;
+--    constant depth_memory    : integer := 2**memory_add_size;
 
 end package UT_EGSE_EP_Package;

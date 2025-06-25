@@ -3,6 +3,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity spectrum is
+    generic(
+        memory_add_size : integer := 10;
+        depth_memory    : integer := 1024
+    );
     port(
         -- global
         i_clk_slow                : in  std_logic;
@@ -12,7 +16,7 @@ entity spectrum is
         i_enable_cycle_spectrum   : in  std_logic;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         -- input from detect Energy level
-        i_enable_erase            : in  std_logic;
+        --i_enable_erase            : in  std_logic;
         i_Energy_level_max        : in  signed(15 downto 0);
         i_readyEnergy_level_max   : in  std_logic;
         -- out spectrum to fifo pipe out
@@ -25,7 +29,7 @@ end entity spectrum;
 architecture RTL of spectrum is
 
     -- RAM 
-    type Array_addr_type is array (1 downto 0) of std_logic_vector(9 downto 0);
+    type Array_addr_type is array (1 downto 0) of std_logic_vector((memory_add_size-1) downto 0);
     signal addr : Array_addr_type;
     type Array_di_type is array (1 downto 0) of std_logic_vector(15 downto 0);
     signal di   : Array_di_type;
@@ -51,6 +55,10 @@ begin
 
     generate_RAM : for N IN 1 downto 0 generate
         label_rame_one : entity work.rams_sp_rf
+            generic map(
+                memory_add_size => memory_add_size,
+                depth_memory    => depth_memory
+            )
             port map(
                 clk  => i_clk_slow,
                 we   => we(N),
@@ -69,6 +77,10 @@ begin
 
     generate_label_spectrum_FSM : for N IN 1 downto 0 generate
         label_spectrum_FSM : entity work.spectrum_FSM
+            generic map(
+                memory_add_size => memory_add_size,
+                depth_memory    => depth_memory
+            )
             port map(
                 -- global
                 i_clk_slow                => i_clk_slow,
@@ -78,7 +90,7 @@ begin
                 i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
                 i_enable_cycle_spectrum   => i_enable_cycle_spectrum,
                 i_set_synchro_spectrum    => std_logic_vector(To_unsigned(N, 1)),
-                i_enable_erase            => i_enable_erase,
+                --i_enable_erase            => i_enable_erase,
                 -- RAM
                 o_we                      => we(N),
                 o_en                      => en(N),

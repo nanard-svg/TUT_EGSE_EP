@@ -53,17 +53,19 @@ architecture arch of TUT_EGSE is
     signal okClk : STD_LOGIC;
     signal okHE  : STD_LOGIC_VECTOR(112 downto 0);
     signal okEH  : STD_LOGIC_VECTOR(64 downto 0);
-    signal okEHx : STD_LOGIC_VECTOR(65 * 13 - 1 downto 0);
+    signal okEHx : STD_LOGIC_VECTOR(65 * 19 - 1 downto 0);
 
     signal ep00wire : STD_LOGIC_VECTOR(31 downto 0);
     signal ep20wire : Array_config_32stdx2_type;
     signal ep21wire : Array_config_32stdx2_type;
     signal ep22wire : Array_config_32stdx2_type;
+    signal ep26wire : Array_config_32stdx2_type;
+    signal ep28wire : Array_config_32stdx2_type;
 
     signal reset : std_logic;
     signal count : unsigned(31 downto 0);
 
-    signal clk_synchro_spectrum : STD_LOGIC_VECTOR(1 downto 0);
+    signal clk_synchro_spectrum  : STD_LOGIC_VECTOR(1 downto 0);
     signal enable_cycle_spectrum : STD_LOGIC_VECTOR(1 downto 0);
     --signal clk_synchro_spectrum   : std_logic;
 
@@ -127,14 +129,27 @@ architecture arch of TUT_EGSE is
     signal TH_ADC       : std_logic_vector(31 downto 0);
     signal enable_erase : std_logic;
 
-    signal pipe_out_spectrum_rd_en         : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_spectrum_dout          : Array_config_32stdx2_type;
-    signal pipe_out_spectrum_din           : Array_config_32stdx2_type;
-    signal pipe_out_spectrum_wr_en         : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_rd_data_count_spectrum : Array_config_11stdx2_type;
-    signal pipe_out_spectrum_wr_en_fifo    : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_spectrum_din_fifo      : Array_config_32stdx2_type;
-    signal spectrum_count_pulse            : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_rd_en : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_out_spectrum_dout  : Array_config_32stdx2_type;
+
+    signal pipe_out_spectrum_sd_rd_en : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_out_spectrum_sd_dout  : Array_config_32stdx2_type;
+
+    signal pipe_out_spectrum_din    : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_sd_din : Array_config_32stdx2_type;
+
+    signal pipe_out_spectrum_wr_en            : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_out_spectrum_sd_wr_en         : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_out_rd_data_count_spectrum    : Array_config_11stdx2_type;
+    signal pipe_out_rd_data_count_spectrum_sd : Array_config_11stdx2_type;
+
+    signal pipe_out_spectrum_wr_en_fifo : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_out_spectrum_din_fifo   : Array_config_32stdx2_type;
+    signal spectrum_count_pulse         : Array_config_32stdx2_type;
+    signal spectrum_sd_count_pulse      : Array_config_32stdx2_type;
+
+    signal pipe_out_spectrum_sd_wr_en_fifo : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_out_spectrum_sd_din_fifo   : Array_config_32stdx2_type;
 
     signal empty_fifo_pipe_out_raw_data : STD_LOGIC_VECTOR(1 downto 0);
     signal din_fifo_raw_data            : Array_config_32signedx2_type;
@@ -256,29 +271,27 @@ begin
     generate_cycle_spectrum : for N IN 1 downto 0 generate
         label_cycle_spectrum : entity work.cycle_spectrum
             port map(
-                sys_clk => sys_clk,
-                reset   => reset,
-                
-                i_detector_number   => To_unsigned(N, 1),
-                o_clk_synchro_spectrum => clk_synchro_spectrum(N),
-                o_enable_cycle_spectrum   => enable_cycle_spectrum(N)
-                
+                sys_clk                 => sys_clk,
+                reset                   => reset,
+                i_detector_number       => To_unsigned(N, 1),
+                o_clk_synchro_spectrum  => clk_synchro_spectrum(N),
+                o_enable_cycle_spectrum => enable_cycle_spectrum(N)
             );
     end generate generate_cycle_spectrum;
 
---    label_Cycle_spectrum : process(sys_clk, reset) is
---    begin
---        if reset = '1' then
---            count_synchro_spectrum <= (others => '0');
---            clk_synchro_spectrum   <= '0';
---        elsif rising_edge(sys_clk) then
---            count_synchro_spectrum <= count_synchro_spectrum + 1;
---            if To_integer(count_synchro_spectrum) >= 20000000 then
---                clk_synchro_spectrum   <= not clk_synchro_spectrum;
---                count_synchro_spectrum <= (others => '0');
---            end if;
---        end if;
---    end process;
+    --    label_Cycle_spectrum : process(sys_clk, reset) is
+    --    begin
+    --        if reset = '1' then
+    --            count_synchro_spectrum <= (others => '0');
+    --            clk_synchro_spectrum   <= '0';
+    --        elsif rising_edge(sys_clk) then
+    --            count_synchro_spectrum <= count_synchro_spectrum + 1;
+    --            if To_integer(count_synchro_spectrum) >= 20000000 then
+    --                clk_synchro_spectrum   <= not clk_synchro_spectrum;
+    --                count_synchro_spectrum <= (others => '0');
+    --            end if;
+    --        end if;
+    --    end process;
 
     label_clock_1KHz : process(sys_clk, reset) is
     begin
@@ -316,7 +329,7 @@ begin
     i_Start_Capture(1) <= ep00wire(1);
 
     reset                <= (not locked) or reset_wire;
-    enable_erase         <= ep00wire(30);
+    --enable_erase         <= ep00wire(30);
     continuous_injection <= ep00wire(29);
 
     ------------------------------------------
@@ -426,37 +439,40 @@ begin
         label_Ep : entity work.EP
             port map(
                 -- global
-                i_clk_slow                => sys_clk,
-                i_clk_fast                => clk_32Mhz,
-                i_reset                   => reset,
+                i_clk_slow                   => sys_clk,
+                i_clk_fast                   => clk_32Mhz,
+                i_reset                      => reset,
                 -- ADC survey
                 --i_data_rx_keeped          => signed(data_rx_keeped),
                 -- global select spectrum
-                i_clk_synchro_spectrum    => clk_synchro_spectrum(N),
-                i_enable_cycle_spectrum   => enable_cycle_spectrum(N),
-                i_filter_number           => std_logic_vector(To_unsigned(N, 1)),
+                i_clk_synchro_spectrum       => clk_synchro_spectrum(N),
+                i_enable_cycle_spectrum      => enable_cycle_spectrum(N),
+                i_filter_number              => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
-                i_gain                    => unsigned(gain(N)),
-                i_TH_ADC                  => TH_ADC,
-                i_TH_rise                 => TH_rise,
-                i_TH_fall                 => TH_fall,
-                i_enable_erase            => enable_erase,
+                i_gain                       => unsigned(gain(N)),
+                i_TH_ADC                     => TH_ADC,
+                i_TH_rise                    => TH_rise,
+                i_TH_fall                    => TH_fall,
+                --i_enable_erase            => enable_erase,
                 -- input Data science
-                i_ready_CDC               => i_ready_CDC,
-                i_data_CDC                => i_data_CDC,
+                i_ready_CDC                  => i_ready_CDC,
+                i_data_CDC                   => i_data_CDC,
                 -- out view 
                 --o_data_after_gain         => data_after_gain(N),
-                o_ready_after_gain        => ready_after_gain(N),
+                o_ready_after_gain           => ready_after_gain(N),
                 -- input coef filter
-                i_coef_fir                => coef_fir(N),
-                i_coef_fir_ready          => coef_fir_ready(N),
+                i_coef_fir                   => coef_fir(N),
+                i_coef_fir_ready             => coef_fir_ready(N),
                 -- out view
-                o_data_before_filter      => data_before_filter(N),
+                o_data_before_filter         => data_before_filter(N),
                 -- out spectrum to fifo pipe out
-                o_pipe_out_spectrum_din   => pipe_out_spectrum_din(N),
-                o_pipe_out_spectrum_wr_en => pipe_out_spectrum_wr_en(N),
-                o_spectrum_count_pulse    => spectrum_count_pulse(N),
-                o_data_after_energy_level => data_after_energy_level(N)
+                o_pipe_out_spectrum_din      => pipe_out_spectrum_din(N),
+                o_pipe_out_spectrum_wr_en    => pipe_out_spectrum_wr_en(N),
+                o_spectrum_count_pulse       => spectrum_count_pulse(N),
+                o_data_after_energy_level    => data_after_energy_level(N),
+                o_pipe_out_spectrum_sd_din   => pipe_out_spectrum_sd_din(N),
+                o_pipe_out_spectrum_sd_wr_en => pipe_out_spectrum_sd_wr_en(N),
+                o_spectrum_sd_count_pulse    => spectrum_sd_count_pulse(N)
             );
     end generate generate_EP;
 
@@ -467,11 +483,18 @@ begin
         lebel_process : process(sys_clk, reset) is
         begin
             if reset = '1' then
-                pipe_out_spectrum_wr_en_fifo(N) <= ('0');
-                pipe_out_spectrum_din_fifo(N)   <= (others => '0');
+                pipe_out_spectrum_wr_en_fifo(N)    <= ('0');
+                pipe_out_spectrum_din_fifo(N)      <= (others => '0');
+                pipe_out_spectrum_sd_wr_en_fifo(N) <= ('0');
+                pipe_out_spectrum_sd_din_fifo(N)   <= (others => '0');
+
             elsif rising_edge(sys_clk) then
                 pipe_out_spectrum_wr_en_fifo(N) <= pipe_out_spectrum_wr_en(N);
                 pipe_out_spectrum_din_fifo(N)   <= pipe_out_spectrum_din(N);
+
+                pipe_out_spectrum_sd_wr_en_fifo(N) <= pipe_out_spectrum_sd_wr_en(N);
+                pipe_out_spectrum_sd_din_fifo(N)   <= pipe_out_spectrum_sd_din(N);
+
             end if;
         end process;
     end generate generate_lebel_process;
@@ -595,7 +618,7 @@ begin
     --  FIFO pipe_out spectrum
     ------------------------------------------
     generate_fifo_pipe_out_specrum : for N IN 1 downto 0 generate
-        fifo_pipe_out_specrum : entity work.fifo_pipe_out_w32_2048_r32_2048
+        fifo_pipe_out_spectrum : entity work.fifo_pipe_out_w32_2048_r32_2048
             port map(
                 rst           => reset,
                 wr_clk        => sys_clk,
@@ -612,6 +635,29 @@ begin
                 rd_rst_busy   => open
             );
     end generate generate_fifo_pipe_out_specrum;
+
+    ------------------------------------------
+    --  FIFO pipe_out spectrum standard definition
+    ------------------------------------------
+    generate_fifo_pipe_out_spectrum_sd : for N IN 1 downto 0 generate
+        fifo_pipe_out_spectrum : entity work.fifo_pipe_out_w32_2048_r32_2048
+            port map(
+                rst           => reset,
+                wr_clk        => sys_clk,
+                rd_clk        => okClk,
+                din           => pipe_out_spectrum_sd_din_fifo(N),
+                wr_en         => pipe_out_spectrum_sd_wr_en_fifo(N),
+                rd_en         => pipe_out_spectrum_sd_rd_en(N),
+                dout          => pipe_out_spectrum_sd_dout(N),
+                full          => open,
+                empty         => open,
+                valid         => open,
+                rd_data_count => pipe_out_rd_data_count_spectrum_sd(N),
+                wr_rst_busy   => open,
+                rd_rst_busy   => open
+            );
+    end generate generate_fifo_pipe_out_spectrum_sd;
+
     ------------------------------------------
     --  FSM pipe_in config in co coef FIR filter
     ------------------------------------------
@@ -666,6 +712,9 @@ begin
                 ep20wire(N) <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(N);
                 ep21wire(N) <= "000000000000000000000" & pipe_out_rd_data_count_spectrum(N);
                 ep22wire(N) <= spectrum_count_pulse(N);
+                ep26wire(N) <= "000000000000000000000" & pipe_out_rd_data_count_spectrum_sd(N);
+                ep28wire(N) <= spectrum_sd_count_pulse(N);
+
                 --ep23wire <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(1);
                 --ep24wire <= "000000000000000000000" & pipe_out_rd_data_count_spectrum(1);
 
@@ -693,7 +742,7 @@ begin
     ------------------------------------------
 
     --  okwire OR
-    okWO : okWireOR generic map(N => 13) port map(okEH => okEH, okEHx => okEHx);
+    okWO : okWireOR generic map(N => 19) port map(okEH => okEH, okEHx => okEHx);
     --  reset, start_capture
     ep00 : okWireIn port map(okHE => okHE, ep_addr => x"00", ep_dataout => ep00wire);
     --  level trig raw data
@@ -742,6 +791,28 @@ begin
     epA3 : okPipeOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"A3", ep_read => rd_en_fifo_pipe_out_raw_data(1), ep_datain => dout_fifo_pipe_out_raw_data(1));
     --  pipe out spectrum
     epA4 : okPipeOut port map(okHE => okHE, okEH => okEHx(13 * 65 - 1 downto 12 * 65), ep_addr => x"A4", ep_read => pipe_out_spectrum_rd_en(1), ep_datain => pipe_out_spectrum_dout(1));
+
+    ------------------------------------------
+    --  Front Panel only for standard definition
+    ------------------------------------------
+
+    --  pipe out spectrum sd
+    epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_sd_rd_en(0), ep_datain => pipe_out_spectrum_sd_dout(0));
+    --  pipe out spectrum sd
+    epA6 : okPipeOut port map(okHE => okHE, okEH => okEHx(15 * 65 - 1 downto 14 * 65), ep_addr => x"A6", ep_read => pipe_out_spectrum_sd_rd_en(1), ep_datain => pipe_out_spectrum_sd_dout(1));
+
+    --  read wire out for FIFO pipe out spectrum sd
+    ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(16 * 65 - 1 downto 15 * 65), ep_addr => x"26", ep_datain => ep26wire(0));
+    --  read wire out for FIFO pipe out spectrum sd
+    ep27 : okWireOut port map(okHE => okHE, okEH => okEHx(17 * 65 - 1 downto 16 * 65), ep_addr => x"27", ep_datain => ep26wire(1));
+
+
+    --  read wire out spectrum_count_pulse sd
+    ep28 : okWireOut port map(okHE => okHE, okEH => okEHx(18 * 65 - 1 downto 17 * 65), ep_addr => x"28", ep_datain => ep28wire(0));
+    --  read wire out spectrum_count_pulse sd
+    ep29 : okWireOut port map(okHE => okHE, okEH => okEHx(19 * 65 - 1 downto 18 * 65), ep_addr => x"29", ep_datain => ep28wire(1));
+
+
 
     ------------------------------------------
     -- ALL

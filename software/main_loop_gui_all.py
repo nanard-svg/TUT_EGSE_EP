@@ -42,6 +42,7 @@ def save_signal_in_file (Signal_out) :
 ############################### classe OK
 
 array_pipe_out = np.ones(1028).astype(int)
+array_pipe_out_sd = np.ones(12).astype(int)
 list_array_pipe_out_MSB = []
 list_array_pipe_out_LSB = []
 list_array_pipe_out1_MSB = []
@@ -156,6 +157,12 @@ class DESTester:
         self.xem.ReadFromPipeOut(adresse_pipe_out_read,array_pipe_out)
         return(array_pipe_out)
 
+
+    def getpipeout_sd(self, adresse_pipe_out_read):
+        self.xem.ReadFromPipeOut(adresse_pipe_out_read, array_pipe_out_sd)
+        return (array_pipe_out)
+
+
 def tohex(val, nbits):
   return hex((val + (1 << nbits)) % (1 << nbits))
 
@@ -179,7 +186,7 @@ def delay_end(fig):
     des.getwire(adress_wire_out_science)
 
     if get == 1028 :
-        print("read pointer spectrum filter 1 : {}".format(get))
+        #print("read pointer spectrum filter 1 : {}".format(get))
         #print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
         adresse_pipe_out_read = 0xA4         #filter1
         des.getpipeout(adresse_pipe_out_read)
@@ -189,50 +196,88 @@ def delay_end(fig):
         des.getwire(adress_wire_out_science)
 
         if get == 1028:
-            print("read pointer spectrum filter 0 : {}".format(get))
+            #print("read pointer spectrum filter 0 : {}".format(get))
             # print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
             adresse_pipe_out_read = 0xA2  # filter1
             des.getpipeout(adresse_pipe_out_read)
             list_array_pipe_out = list(array_pipe_out)
 
-            adress_wire_out_science = 0x24  # filter 0
+            adress_wire_out_science = 0x26  # filter 0 SD
             des.getwire(adress_wire_out_science)
 
-            #print("################################ DATA of  spectrum filter 1 #############################################")
-            for elm in list_array_pipe_out[4:] :
-                #print(type(elm))
-                #list_array_pipe_out_MSB.append(int(elm/2**16))
-                list_array_pipe_out_MSB.append(np.short((elm & 0xFFFF0000)/2**16))
-                #print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
-                list_array_pipe_out_LSB.append(np.short(elm & 0xFFFF))
-                #print("energy : {}".format(np.short(elm & 0xFFFF)))
+            if get == 12:
 
-                if (np.short(elm & 0xFFFF)) != 0:
-                    print("spectrum", tohex(elm, 32))
+                print("read pointer spectrum filter 0 standard definition : {}".format(get))
+                adresse_pipe_out_read = 0xA5  # filter1
+                des.getpipeout_sd(adresse_pipe_out_read)
+                list_array_pipe_out_standard_definition = list(array_pipe_out_sd)
 
-                    # Construction du spectre
-                    add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
-                    data = (elm & 0xFFFF)  # Ajout GO
-                    Spectre[add] = Spectre[add] + data  # Ajout GO
-                    # Spectre[add] = data
+                for element in list_array_pipe_out_standard_definition:
+                    print("spectrum SD filter 0", tohex(element, 32))
+
+                adress_wire_out_science = 0x28
+                des.getwire(adress_wire_out_science)
+
+                print("############################################")
+                print("read counter pulse filter Standard definition 0 add=0x28 {}".format(get))
+                print("############################################")
+
+                adress_wire_out_science = 0x27  # filter 1 SD
+                des.getwire(adress_wire_out_science)
 
 
-            for elm in list_array_pipe_out1[4:]:
-                # print(type(elm))
-                # list_array_pipe_out_MSB.append(int(elm/2**16))
-                list_array_pipe_out1_MSB.append(np.short((elm & 0xFFFF0000) / 2 ** 16))
-                # print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
-                list_array_pipe_out1_LSB.append(np.short(elm & 0xFFFF))
-                # print("energy : {}".format(np.short(elm & 0xFFFF)))
+                if get == 12:
 
-                if (np.short(elm & 0xFFFF)) != 0:
-                    print("spectrum", tohex(elm, 32))
+                    print("read pointer spectrum filter 0 standard definition : {}".format(get))
+                    adresse_pipe_out_read = 0xA6  # filter1
+                    des.getpipeout_sd(adresse_pipe_out_read)
+                    list_array_pipe_out_standard_definition = list(array_pipe_out_sd)
 
-                    # Construction du spectre
-                    add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
-                    data = (elm & 0xFFFF)  # Ajout GO
-                    Spectre1[add] = Spectre1[add] + data  # Ajout GO
-                    # Spectre1[add] = data
+                    for element in list_array_pipe_out_standard_definition:
+                        print("spectrum SD filter 1", tohex(element, 32))
+
+                    adress_wire_out_science = 0x29
+                    des.getwire(adress_wire_out_science)
+
+                    print("############################################")
+                    print("read counter pulse filter Standard definition 1 add=0x29 {}".format(get))
+                    print("############################################")
+
+                    #print("################################ DATA of  spectrum filter 1 #############################################")
+                    for elm in list_array_pipe_out[4:] :
+                        #print(type(elm))
+                        #list_array_pipe_out_MSB.append(int(elm/2**16))
+                        list_array_pipe_out_MSB.append(np.short((elm & 0xFFFF0000)/2**16))
+                        #print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
+                        list_array_pipe_out_LSB.append(np.short(elm & 0xFFFF))
+                        #print("energy : {}".format(np.short(elm & 0xFFFF)))
+
+                        if (np.short(elm & 0xFFFF)) != 0:
+                            #print("spectrum", tohex(elm, 32))
+
+                            # Construction du spectre
+                            add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
+                            data = (elm & 0xFFFF)  # Ajout GO
+                            Spectre[add] = Spectre[add] + data  # Ajout GO
+                            # Spectre[add] = data
+
+
+                    for elm in list_array_pipe_out1[4:]:
+                        # print(type(elm))
+                        # list_array_pipe_out_MSB.append(int(elm/2**16))
+                        list_array_pipe_out1_MSB.append(np.short((elm & 0xFFFF0000) / 2 ** 16))
+                        # print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
+                        list_array_pipe_out1_LSB.append(np.short(elm & 0xFFFF))
+                        # print("energy : {}".format(np.short(elm & 0xFFFF)))
+
+                        if (np.short(elm & 0xFFFF)) != 0:
+                            #print("spectrum", tohex(elm, 32))
+
+                            # Construction du spectre
+                            add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
+                            data = (elm & 0xFFFF)  # Ajout GO
+                            Spectre1[add] = Spectre1[add] + data  # Ajout GO
+                            # Spectre1[add] = data
 
         # racine.bind("<BackSpace>",  clear_vect())
 

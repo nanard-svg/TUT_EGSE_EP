@@ -2,7 +2,15 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.UT_EGSE_EP_Package.all;
+
 entity spectrum_FSM is
+    
+    generic(
+    memory_add_size : integer := 10;
+    depth_memory    : integer := 1024
+    );
+    
     port(
         -- global
         i_clk_slow                : in  std_logic;
@@ -12,11 +20,10 @@ entity spectrum_FSM is
         i_clk_synchro_spectrum    : in  std_logic;
         i_enable_cycle_spectrum   : in  std_logic;
         i_set_synchro_spectrum    : in  std_logic_vector(0 downto 0);
-        i_enable_erase            : in  std_logic;
         -- RAM
         o_we                      : out std_logic;
         o_en                      : out std_logic;
-        o_addr                    : out std_logic_vector(9 downto 0);
+        o_addr                    : out std_logic_vector(memory_add_size-1 downto 0);
         o_di                      : out std_logic_vector(15 downto 0);
         i_do                      : in  std_logic_vector(15 downto 0);
         -- input from detect Energy level
@@ -34,8 +41,8 @@ architecture RTL of spectrum_FSM is
     type state_type is (init_ram, detect_energy_max_ready, read_ram, write_ram, header_to_gse, first_data_to_gse, write_to_gse, last_data_to_gse, end_write_to_gse, init_ram_work, dispatch);
     signal TM_Byte_index        : integer range 0 to 8;
     signal state                : state_type;
-    signal addr                 : unsigned(9 downto 0);
-    signal old_addr             : unsigned(9 downto 0);
+    signal addr                 : unsigned(memory_add_size-1 downto 0);
+    signal old_addr             : unsigned(memory_add_size-1 downto 0);
     signal spectrum_count_pulse : std_logic_vector(31 downto 0);
     signal clk_synchro_spectrum : std_logic;
 
@@ -57,7 +64,7 @@ begin
             o_spectrum_count_pulse    <= (others => '0');
             TM_Byte_index             <= 0;
             clk_synchro_spectrum      <= '0';
-        --stamp <= (others => '0');
+        
 
         elsif rising_edge(i_clk_slow) then
 
@@ -68,17 +75,16 @@ begin
                 when init_ram =>
 
                     if To_integer(unsigned(addr)) = 0 then
-                        addr  <= To_unsigned(0, 10);
+                        addr  <= To_unsigned(0, memory_add_size);
                         state <= detect_energy_max_ready;
                         o_we  <= '0';
                         o_en  <= '0';
                     else
-                        o_di <= (others => '0');
-                        --addr <= std_logic_vector(unsigned(addr) + to_unsigned(1, 10));
+                        o_di <= (others => '0');             
                         addr <= (addr) - 1;
                         o_we <= '1';
                         o_en <= '1';
-                        --if To_integer(unsigned(o_addr)) = 65536-1 tho_en
+                        
                     end if;
 
                 when detect_energy_max_ready =>
@@ -98,7 +104,7 @@ begin
                         else
                             if i_ready_energy_level_max = '1' then
                                 spectrum_count_pulse <= std_logic_vector(unsigned(spectrum_count_pulse) + 1);
-                                addr                 <= unsigned(i_energy_level_max(14 downto 5)); -- remove MSB(15) sign bit always 0
+                                addr                 <= unsigned(i_energy_level_max(i_energy_level_max'left-1 downto i_energy_level_max'left-memory_add_size)); -- remove MSB(15) sign bit always 0
                                 o_en                 <= '1';
                                 state                <= read_ram;
                             end if;
@@ -109,14 +115,12 @@ begin
 
                     o_en  <= '0';
                     o_we  <= '0';
-                    --stamp <= unsigned(i_do) + to_unsigned(1, 16);
                     state <= write_ram;
 
                 when write_ram =>
 
                     o_en  <= '1';
                     o_we  <= '1';
-                    --o_di  <= std_logic_vector(unsigned(i_do) + to_unsigned(1, 16));
                     o_di  <= std_logic_vector(unsigned(i_do) + 1);
                     state <= detect_energy_max_ready;
 
@@ -163,15 +167,15 @@ begin
                     old_addr <= addr;
 
                     o_pipe_out_spectrum_wr_en <= '1';
-                    o_pipe_out_spectrum_din   <= "000000" & std_logic_vector(old_addr) & i_do;
+                    o_pipe_out_spectrum_din   <= std_logic_vector( resize(old_addr,16))&i_do;
 
-                    if To_integer(unsigned(addr)) = (1024 - 1) then
+                    if To_integer(unsigned(addr)) = (depth_memory - 1) then
                         o_en  <= '0';
                         state <= last_data_to_gse;
                     end if;
 
                 when last_data_to_gse =>
-                    o_pipe_out_spectrum_din <= "000000" & std_logic_vector(old_addr) & i_do;
+                    o_pipe_out_spectrum_din <= std_logic_vector( resize(old_addr,16))&i_do;
                     state                   <= end_write_to_gse;
 
                 when end_write_to_gse =>
@@ -183,45 +187,23 @@ begin
                     addr                      <= (others => '1');
                     o_di                      <= (others => '0');
 
-                --                when end_to_gse =>
-                --
-                --                    TM_Byte_index <= TM_Byte_index + 1;
-                --
-                --                    case TM_Byte_index is
-                --
-                --                        when 0 =>       -- 
-                --                            o_pipe_out_spectrum_wr_en <= '1';
-                --                            o_pipe_out_spectrum_din   <= x"00000000";
-                --                        --------------------------------------------------------
-                --                        when 1 =>
-                --                            o_pipe_out_spectrum_din <= x"00000000";
-                --                            TM_Byte_index           <= 0;
-                --                            state                   <= dispatch;
-                --                        --------------------------------------------------------
-                --                        when others =>
-                --
-                --                    end case;
-
                 when init_ram_work =>
 
-                    if i_enable_erase = '1' then
-                        if To_integer(unsigned(addr)) = 0 then
-                            addr  <= To_unsigned(0, 10);
-                            state <= dispatch;
-                            o_we  <= '0';
-                            o_en  <= '0';
-                        else
-                            o_di <= (others => '0');
-                            --addr <= std_logic_vector(unsigned(addr) + to_unsigned(1, 10));
-                            addr <= (addr) - 1;
-                            o_we <= '1';
-                            o_en <= '1';
-                            --if To_integer(unsigned(o_addr)) = 65536-1 tho_en
-                        end if;
-                    else
+                    if To_integer(unsigned(addr)) = 0 then
+                        addr  <= To_unsigned(0, memory_add_size);
                         state <= dispatch;
+                        o_we  <= '0';
+                        o_en  <= '0';
+                    else
+                        o_di <= (others => '0');
+                        addr <= (addr) - 1;
+                        o_we <= '1';
+                        o_en <= '1';
+                        
                     end if;
-
+                    
+                    
+            
                 when dispatch =>
 
                     o_pipe_out_spectrum_wr_en <= '0';

@@ -7,37 +7,41 @@ use work.UT_EGSE_EP_Package.all;
 entity EP is
     port(
         -- global
-        i_clk_slow                : in  std_logic;
-        i_clk_fast                : in  std_logic;
-        i_reset                   : in  std_logic;
+        i_clk_slow                   : in  std_logic;
+        i_clk_fast                   : in  std_logic;
+        i_reset                      : in  std_logic;
         -- ADC survey
         --i_data_rx_keeped          : in  signed(15 downto 0);
         -- global select spectrum
-        i_clk_synchro_spectrum    : in  std_logic;
-        i_enable_cycle_spectrum   : in  std_logic;
-        i_filter_number           : in  std_logic_vector(0 downto 0);
+        i_clk_synchro_spectrum       : in  std_logic;
+        i_enable_cycle_spectrum      : in  std_logic;
+        i_filter_number              : in  std_logic_vector(0 downto 0);
         --input param
-        i_gain                    : in  unsigned(31 downto 0);
-        i_TH_ADC                  : in  std_logic_vector(31 downto 0);
-        i_TH_rise                 : in  std_logic_vector(31 downto 0);
-        i_TH_fall                 : in  std_logic_vector(31 downto 0);
-        i_enable_erase            : in  std_logic;
+        i_gain                       : in  unsigned(31 downto 0);
+        i_TH_ADC                     : in  std_logic_vector(31 downto 0);
+        i_TH_rise                    : in  std_logic_vector(31 downto 0);
+        i_TH_fall                    : in  std_logic_vector(31 downto 0);
+        --i_enable_erase            : in  std_logic;
         -- input
-        i_ready_CDC               : in  std_logic;
-        i_data_CDC                : in  signed(15 downto 0);
+        i_ready_CDC                  : in  std_logic;
+        i_data_CDC                   : in  signed(15 downto 0);
         -- out
         --o_data_after_gain         : out signed(15 downto 0);
-        o_ready_after_gain        : out std_logic;
+        o_ready_after_gain           : out std_logic;
         --coef
-        i_coef_fir                : in  Array_config_32x16_type;
-        i_coef_fir_ready          : in  std_logic;
-        o_data_before_filter      : out signed(15 downto 0);
+        i_coef_fir                   : in  Array_config_32x16_type;
+        i_coef_fir_ready             : in  std_logic;
+        o_data_before_filter         : out signed(15 downto 0);
         -- out spectrum to fifo pipe out
-        o_pipe_out_spectrum_din   : out std_logic_vector(31 downto 0);
-        o_pipe_out_spectrum_wr_en : out std_logic;
-        o_spectrum_count_pulse    : out std_logic_vector(31 downto 0);
+        o_pipe_out_spectrum_din      : out std_logic_vector(31 downto 0);
+        o_pipe_out_spectrum_wr_en    : out std_logic;
+        o_spectrum_count_pulse       : out std_logic_vector(31 downto 0);
         --
-        o_data_after_energy_level : out signed(15 downto 0)
+        o_data_after_energy_level    : out signed(15 downto 0);
+        -- out spectrum sd
+        o_pipe_out_spectrum_sd_din   : out std_logic_vector(31 downto 0);
+        o_pipe_out_spectrum_sd_wr_en : out std_logic;
+        o_spectrum_sd_count_pulse    : out std_logic_vector(31 downto 0)
     );
 end entity EP;
 
@@ -52,7 +56,9 @@ architecture RTL of EP is
     signal ready_after_filter : std_logic;
     signal data_after_gain    : signed(15 downto 0);
     signal ready_after_gain   : std_logic;
-    --signal data_rx_keeped     : signed(15 downto 0);
+
+    signal ready_energy_level_max_sd : std_logic;
+    signal energy_level_max_sd       : signed(15 downto 0);
 
 begin
 
@@ -151,10 +157,14 @@ begin
         );
 
     ------------------------------------------
-    --  spectrum
+    --  spectrum HD
     ------------------------------------------
 
     lable_spectrum : entity work.spectrum
+        generic map(
+            memory_add_size => 10,
+            depth_memory    => 1024
+        )
         port map(
             -- global
             i_clk_slow                => i_clk_slow,
@@ -164,13 +174,54 @@ begin
             i_enable_cycle_spectrum   => i_enable_cycle_spectrum,
             i_filter_number           => i_filter_number,
             -- input from detect Energy level
-            i_enable_erase            => i_enable_erase,
+            --i_enable_erase            => i_enable_erase,
             i_Energy_level_max        => Energy_level_max,
             i_readyEnergy_level_max   => readyEnergy_level_max,
             -- out spectrum to fifo pipe out
             o_pipe_out_spectrum_din   => o_pipe_out_spectrum_din,
             o_pipe_out_spectrum_wr_en => o_pipe_out_spectrum_wr_en,
             o_spectrum_count_pulse    => o_spectrum_count_pulse
+        );
+
+    ------------------------------------------
+    --  detect standard energy
+    ------------------------------------------
+
+    label_standard_energy : entity work.detect_standard_energy
+        port map(
+            i_clk_slow                  => i_clk_slow,
+            i_reset                     => i_reset,
+            i_ready_energy_level_max    => readyEnergy_level_max,
+            i_energy_level_max          => Energy_level_max,
+            o_ready_energy_level_max_sd => ready_energy_level_max_sd,
+            o_energy_level_max_sd       => energy_level_max_sd
+        );
+
+    ------------------------------------------
+    --  spectrum Standard definition
+    ------------------------------------------
+
+    lable_spectrum_Standard_definition : entity work.spectrum
+        generic map(
+            memory_add_size => 3,
+            depth_memory    => 8
+        )
+        port map(
+            -- global
+            i_clk_slow                => i_clk_slow,
+            i_reset                   => i_reset,
+            -- global select spectrum
+            i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
+            i_enable_cycle_spectrum   => i_enable_cycle_spectrum,
+            i_filter_number           => i_filter_number,
+            -- input from detect Energy level
+            --i_enable_erase            => i_enable_erase,
+            i_Energy_level_max        => energy_level_max_sd,
+            i_readyEnergy_level_max   => ready_energy_level_max_sd,
+            -- out spectrum to fifo pipe out
+            o_pipe_out_spectrum_din   => o_pipe_out_spectrum_sd_din,
+            o_pipe_out_spectrum_wr_en => o_pipe_out_spectrum_sd_wr_en,
+            o_spectrum_count_pulse    => o_spectrum_sd_count_pulse
         );
 
 end architecture RTL;
