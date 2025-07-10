@@ -1044,7 +1044,7 @@ begin
 
         wait for 10 us;
         -- apply all
-        SetWireInValue(x"01", x"0000_0FA0", NO_MASK); -- set trig
+        SetWireInValue(x"01", x"0000_03E8", NO_MASK); -- set trig
         UpdateWireIns;
 
         wait for 10 us;

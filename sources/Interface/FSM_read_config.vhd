@@ -17,13 +17,13 @@ entity FSM_read_config is
         --output
         o_pipe_in_config_rd_en  : out std_logic;
         o_coef_fir_ready        : out std_logic;
-        o_coef_fir              : out Array_config_32x16_type
+        o_coef_fir              : out Array_Array_config_32x16_type
     );
 end entity FSM_read_config;
 
 architecture RTL of FSM_read_config is
 
-    type state_type is (IDLE, read, valid);
+    type state_type is (IDLE, read_low_frequency, valid_low_frequency, read_high_frequency,valid_high_frequency);
     signal state    : state_type;
     signal add_coef : integer;
 
@@ -38,26 +38,52 @@ begin
         if i_reset = '1' then
             state                  <= IDLE;
             o_pipe_in_config_rd_en <= '0';
-            add_coef               <= 31;
-            o_coef_fir             <= (others => (others => '0'));
+            add_coef               <= 0;
+            o_coef_fir(0)          <= (others => (others => '0'));
+            o_coef_fir(1)          <= (others => (others => '0'));
             o_coef_fir_ready       <= '0';
         elsif rising_edge(i_clk_slow) then
 
             case state is
                 when IDLE =>
 
-                    if i_pipe_in_config_empty = '0' and To_integer(unsigned(i_pipe_in_rd_data_count)) = 32 then
-                        state      <= read;
-                        add_coef   <= 0;
-                        o_coef_fir <= (others => (others => '0'));
-                        o_coef_fir_ready       <= '0';
+                    if i_pipe_in_config_empty = '0' and To_integer(unsigned(i_pipe_in_rd_data_count)) = 64 then
+                        state            <= read_low_frequency;
+                        add_coef         <= 0;
+                        o_coef_fir(0)    <= (others => (others => '0'));
+                        o_coef_fir(1)    <= (others => (others => '0'));
+                        o_coef_fir_ready <= '0';
                     end if;
 
-                when read =>
+                when read_low_frequency =>
 
                     if add_coef < 32 then
                         o_pipe_in_config_rd_en <= '1';
-                        state                  <= valid;
+                        state                  <= valid_low_frequency;
+                        
+                        
+                    else
+                        state                  <= read_high_frequency;
+                        o_pipe_in_config_rd_en <= '0';
+                        --o_coef_fir_ready       <= '1';
+                        add_coef         <= 0;
+                    end if;
+
+                when valid_low_frequency =>
+
+                    o_pipe_in_config_rd_en <= '0';
+
+                    if i_pipe_in_config_valid = '1' then
+                        o_coef_fir(0)(add_coef) <= i_pipe_in_config_dout(15 downto 0);
+                        add_coef                <= add_coef + 1;
+                        state                   <= read_low_frequency;
+                    end if;
+
+                when read_high_frequency =>
+
+                    if add_coef < 32 then
+                        o_pipe_in_config_rd_en <= '1';
+                        state                  <= valid_high_frequency;
                     else
                         state                  <= IDLE;
                         o_pipe_in_config_rd_en <= '0';
@@ -65,14 +91,14 @@ begin
 
                     end if;
 
-                when valid =>
+                when valid_high_frequency =>
 
                     o_pipe_in_config_rd_en <= '0';
 
                     if i_pipe_in_config_valid = '1' then
-                        o_coef_fir(add_coef) <= i_pipe_in_config_dout(15 downto 0);
-                        add_coef             <= add_coef + 1;
-                        state                <= read;
+                        o_coef_fir(1)(add_coef)<= i_pipe_in_config_dout(15 downto 0);
+                        add_coef                <= add_coef + 1;
+                        state                   <= read_high_frequency;
                     end if;
 
             end case;

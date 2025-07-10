@@ -59,19 +59,24 @@ class DeviceController:
     
     # Méthode pour réinitialiser le DES
     def reset_des(self, param_vals):
-        print("paramettre dans reset = {}".format(param_vals))
+        #print("paramettre dans reset = {}".format(param_vals))
         self.xem.SetWireInValue(0x00, param_vals)  
         self.xem.UpdateWireIns()
         
     # Méthode pour sortir de l'état de réinitialisation du DES
     def unreset_des(self, param_vals):
-        #print("paramettre dans reset = {}".format(param_vals))
+        print("paramettre dans unreset = {}".format(param_vals))
         self.xem.SetWireInValue(0x00, param_vals)  
         self.xem.UpdateWireIns()
 
     # Méthode renommée pour démarrer la capture du périphérique
     def start_capture_device(self, param_vals):
         self.xem.SetWireInValue(0x00, param_vals)  
+        self.xem.UpdateWireIns()
+
+    def enable_high_filter(self, param_vals):
+        print("paramettre dans enable_high_filter = {}".format(param_vals))
+        self.xem.SetWireInValue(0x00, param_vals)
         self.xem.UpdateWireIns()
 
     # Méthode pour définir un niveau de fil
@@ -83,6 +88,8 @@ class DeviceController:
     def set_wire_th_rise(self, th_rise):
         self.xem.SetWireInValue(0x02, th_rise)
         self.xem.UpdateWireIns()
+        self.xem.SetWireInValue(0x08, th_rise)
+        self.xem.UpdateWireIns()
         TH_ADC=1023*32
         self.xem.SetWireInValue(0x07, TH_ADC)
         self.xem.UpdateWireIns()
@@ -91,16 +98,23 @@ class DeviceController:
     def set_wire_th_fall(self, th_fall):
         self.xem.SetWireInValue(0x03, th_fall)
         self.xem.UpdateWireIns()
+        self.xem.SetWireInValue(0x09, th_fall)
+        self.xem.UpdateWireIns()
 
     # Méthode pour définir le gain du Filtre0
     def setwire_gain_filtre0(self,gain_filtre0):
         self.xem.SetWireInValue(0x04, gain_filtre0)
+        self.xem.UpdateWireIns()
+        self.xem.SetWireInValue(0x0A, gain_filtre0)
         self.xem.UpdateWireIns()
         
     # Méthode pour définir le gain du Filtre1
     def setwire_gain_filtre1(self,gain_filtre1):
         self.xem.SetWireInValue(0x05, gain_filtre1)
         self.xem.UpdateWireIns()
+        self.xem.SetWireInValue(0x0B, gain_filtre1)
+        self.xem.UpdateWireIns()
+
 
     # Méthode pour obtenir la valeur d'un fil
     def get_wire(self, address_wire_out):
@@ -180,7 +194,9 @@ class GUIManager:
         self.plot1 = self.fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.root)
-        
+
+
+
         # self.v = tk.StringVar()
         # self.v1 = tk.StringVar()
         # self.Entry_Gain_FIR0 = 0
@@ -336,7 +352,8 @@ class GUIManager:
         
         # Adding close and reset in the toolbar menu
         systemConfiguration_menu = tk.Menu(menubar, tearoff=0)
-        systemConfiguration_menu.add_command(label="Reset of OpalKelly", underline=0, command=self.application.Reset_unreset)
+        #systemConfiguration_menu.add_command(label="Reset of OpalKelly", underline=0, command=self.Reset_unreset)
+        systemConfiguration_menu.add_command(label="Enable_high_frequency_filter", underline=0,command=self.Enable_high_frequency_filter)
         systemConfiguration_menu.add_command(label="Close system", underline=0, command=self.close_opal_kelly)
         systemConfiguration_menu.add_separator()
         menubar.add_cascade(label="Gestion", menu=systemConfiguration_menu)
@@ -628,7 +645,7 @@ class GUIManager:
         self.application.mode_adc = 0
         self.application.capture_start = 1
         self.application.reset = 0
-        param = self.application.param_values(self.application.reset_ram, self.application.continuous_ready, self.application.mode_adc, self.application.capture_start, self.application.reset)
+        param = self.application.param_values(self.application.enable_high_filter, self.application.continuous_ready, self.application.mode_adc, self.application.capture_start, self.application.reset)
         self.device_controller.start_capture_device(param)
 
         with open(self.selected_file, "r") as file:
@@ -653,10 +670,23 @@ class GUIManager:
         self.application.mode_adc = 1
         self.application.capture_start = 1
         self.application.reset = 0
-        param = self.application.param_values(self.application.reset_ram, self.application.continuous_ready, self.application.mode_adc,  self.application.capture_start, self.application.reset)
+        param = self.application.param_values(self.application.enable_high_filter, self.application.continuous_ready, self.application.mode_adc,  self.application.capture_start, self.application.reset)
         self.device_controller.start_capture_device(param)
 
         messagebox.showinfo("Info", "the launsh of the ADC set successfully.")
+
+    def Enable_high_frequency_filter(self):
+        print("Enable_high_frequency_filter")
+        print("Enable_high_frequency_filter")
+        print("Enable_high_frequency_filter")
+        print("Enable_high_frequency_filter")
+        self.application.mode_adc = 1
+        self.application.capture_start = 1
+        self.application.reset = 0
+        self.application.enable_high_filter = 1
+        param = self.application.param_values(self.application.enable_high_filter, self.application.continuous_ready, self.application.mode_adc, self.application.capture_start,self.application.reset)
+        self.device_controller.enable_high_filter(param)
+
 
     # Méthode pour fermer la connexion Opal Kelly
     def close_opal_kelly(self, event=None):
@@ -675,10 +705,10 @@ class Application:
         self.gui_manager = GUIManager(self.root, self.device_controller, self.data_processor, self.data_processor1, self)
         
         self.mode_adc = 1
-        self.reset_ram = 1
+        self.enable_high_filter = 0
         self.continuous_ready = 1
         self.capture_start = 0
-        self.reset = 1
+        self.reset = 0
         
         self.level_trig = 5
         self.TH_rise = 62*32
@@ -702,12 +732,39 @@ class Application:
         self.start_capture()
         self.root.mainloop()
 
+
     # Méthode pour initialiser le périphérique
     def initialize_device(self):
         print("------ DES Encrypt/Decrypt Tester in Python ------")
         if not self.device_controller.initialize_device():
             pass
         print("------------------------------------------------------------")
+
+    def Reset_unreset(self):
+        print("RESET")
+        self.capture_start = 0
+        self.mode_adc = 1
+        self.reset = 1
+        self.enable_high_filter = 0
+        param = self.param_values(self.enable_high_filter, self.continuous_ready, self.mode_adc, self.capture_start,self.reset)
+        print("Param = {}".format(param))
+        self.device_controller.reset_des(param)
+        print(f"valeur capturestart pour RESET: {self.capture_start}")
+        print(f"valeur reset pour RESET: {self.reset}")
+
+        time.sleep(2)
+
+        print("UNRESET")
+        self.capture_start = 1
+        self.mode_adc = 1
+        self.reset = 0
+
+        param = self.param_values(self.enable_high_filter, self.continuous_ready, self.mode_adc, self.capture_start,self.reset)
+        # print("Param = {}".format(param))
+        self.device_controller.unreset_des(param)
+        print(f"valeur capturestart pour RESET: {self.capture_start}")
+        print(f"valeur reset pour RESET: {self.reset}")
+
 
     # Méthode pour charger les coefficients
     def load_coefficients(self):
@@ -780,7 +837,7 @@ class Application:
     # Méthode pour démarrer la capture
     def start_capture(self):
         print("start_capture")
-        param = self.param_values(self.reset_ram, self.continuous_ready, self.mode_adc, capture_start = 1, reset = 0)
+        param = self.param_values(self.enable_high_filter, self.continuous_ready, self.mode_adc, capture_start = 1, reset = 0)
         self.device_controller.start_capture_device(param)
         self.gui_manager.fig.axes[0].plot(self.data_processor.spectre, label = "FIR0" ,color = 'tab:red')
         self.gui_manager.fig.axes[0].plot(self.data_processor1.spectre1, label = "FIR1", color = 'tab:orange')
@@ -788,31 +845,10 @@ class Application:
         self.delay_end(self.gui_manager.fig)
 
     # Méthode pour obtenir les valeurs des paramètres
-    def param_values(self, mode_adc, reset_ram, continuous_ready, capture_start, reset): 
-        param_vals = 2**31 * self.mode_adc + 2**30 * self.reset_ram + 2**29 * self.continuous_ready + 2**1 * capture_start + 2**0 * reset 
+    def param_values(self, mode_adc, enable_high_filter, continuous_ready, capture_start, reset): 
+        param_vals = 2**31 * self.mode_adc + 2**30 * self.enable_high_filter + 2**29 * self.continuous_ready + 2**1 * capture_start + 2**0 * reset 
         return (param_vals)
 
-    def Reset_unreset(self):
-        print("RESET")
-        self.capture_start = 0
-        self.reset = 1
-        param = self.param_values(self.reset_ram, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
-        #print("Param = {}".format(param))
-        self.device_controller.reset_des(param)
-        print(f"valeur capturestart pour RESET: {self.capture_start}")
-        print(f"valeur reset pour RESET: {self.reset}")
-        
-        time.sleep(2)
-
-        print("UNRESET")
-        self.capture_start = 1
-        self.reset = 0
-        param = self.param_values(self.reset_ram, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
-        #print("Param = {}".format(param))
-        self.device_controller.unreset_des(param)
-        print(f"valeur capturestart pour RESET: {self.capture_start}")
-        print(f"valeur reset pour RESET: {self.reset}")
-    
     def show_temporal_data(self):
         
         list_array_pipe_out_MSB = []
@@ -825,7 +861,7 @@ class Application:
         print("RESET")
         self.capture_start = 0
         self.reset = 1
-        self.param = self.param_values(self.reset_ram, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
+        self.param = self.param_values(self.enable_high_filter, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
         #print("Param = {}".format(param))
         self.device_controller.reset_des(self.param)
         print(f"valeur capturestart pour RESET: {self.capture_start}")
@@ -836,7 +872,7 @@ class Application:
         print("UNRESET")
         self.capture_start = 1
         self.reset = 0
-        self.param = self.param_values(self.reset_ram, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
+        self.param = self.param_values(self.enable_high_filter, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
         #print("Param = {}".format(param))
         self.device_controller.unreset_des(self.param)
         print(f"valeur capturestart pour RESET: {self.capture_start}")
@@ -898,7 +934,7 @@ class Application:
     
         self.start_capture  = 1
         self.reset  = 0
-        self.param = self.param_values(self.reset_ram, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
+        self.param = self.param_values(self.enable_high_filter, self.continuous_ready, self.mode_adc, self.capture_start, self.reset)
     
         for c in range(100):
         

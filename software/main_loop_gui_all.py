@@ -54,7 +54,7 @@ Spectre1 = [0 for i in range(0, 1024)]
 #################################### global setting ######################################
 
 mode_adc = 1 # set to one if ADC use
-reset_ram = 1 # set to one if clear RAM spectrum
+enable_high_filter = 0 # set to one if clear RAM spectrum
 continuous_ready  = 1 # generally set to one set to zero if filter analysis
 start_capture  = 0
 
@@ -125,9 +125,20 @@ class DESTester:
         self.xem.SetWireInValue(0x02, TH_rise)
         self.xem.UpdateWireIns()
 
+    def setwire_TH_rise_high_frequency(self,TH_rise):
+
+        self.xem.SetWireInValue(0x08, TH_rise)
+        self.xem.UpdateWireIns()
+
+
     def setwire_TH_fall(self,TH_fall):
 
         self.xem.SetWireInValue(0x03, TH_fall)
+        self.xem.UpdateWireIns()
+
+    def setwire_TH_fall_high_frequency(self,TH_fall):
+
+        self.xem.SetWireInValue(0x09, TH_fall)
         self.xem.UpdateWireIns()
 
     def setwire_TH_ADC(self, TH_ADC):
@@ -140,10 +151,21 @@ class DESTester:
         self.xem.SetWireInValue(0x04, gain_filtre0)
         self.xem.UpdateWireIns()
 
+    def setwire_gain_high_frequency0(self,gain_high_frequency0):
+
+        self.xem.SetWireInValue(0x0A, gain_high_frequency0)
+        self.xem.UpdateWireIns()
+
     def setwire_gain_filtre1(self,gain_filtre1):
 
         self.xem.SetWireInValue(0x05, gain_filtre1)
         self.xem.UpdateWireIns()
+
+    def setwire_gain_high_frequency1(self,gain_high_frequency1):
+
+        self.xem.SetWireInValue(0x0B, gain_high_frequency1)
+        self.xem.UpdateWireIns()
+
 
     def getwire(self,adress_wire_out_science):
         global get
@@ -208,7 +230,7 @@ def delay_end(fig):
             if get == 12:
 
                 print("read pointer spectrum filter 0 standard definition : {}".format(get))
-                adresse_pipe_out_read = 0xA5  # filter1
+                adresse_pipe_out_read = 0xA5  # filter0
                 des.getpipeout_sd(adresse_pipe_out_read)
                 list_array_pipe_out_standard_definition = list(array_pipe_out_sd)
 
@@ -228,7 +250,7 @@ def delay_end(fig):
 
                 if get == 12:
 
-                    print("read pointer spectrum filter 0 standard definition : {}".format(get))
+                    print("read pointer spectrum filter 1 standard definition : {}".format(get))
                     adresse_pipe_out_read = 0xA6  # filter1
                     des.getpipeout_sd(adresse_pipe_out_read)
                     list_array_pipe_out_standard_definition = list(array_pipe_out_sd)
@@ -316,24 +338,24 @@ def delay_end(fig):
 
 #################################### param ######################################
 
-def param(mode_adc, reset_ram, continuous_ready, start_capture,reset):
-    param_vals = 2**31*mode_adc + 2**30*reset_ram + 2**29*continuous_ready + 2**1*start_capture + 2**0*reset
+def param(mode_adc, enable_high_filter, continuous_ready, start_capture,reset):
+    param_vals = 2**31*mode_adc + 2**30*enable_high_filter + 2**29*continuous_ready + 2**1*start_capture + 2**0*reset
 
     return param_vals
 
 def Reset_unreset() :
 
     mode_adc = 0  # set to one if ADC use
-    reset_ram = 1  # set to one if clear RAM spectrum
+    enable_high_filter = 1  # set to one if clear RAM spectrum
     continuous_ready = 1  # generally set to one set to zero if filter analysis
     start_capture = 0
     reset = 1
     print("RESET")
-    des.ResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+    des.ResetDES(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
     time.sleep(2)
     reset = 0
     print("unRESET")
-    des.unResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+    des.unResetDES(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
     start_capture = 1
 
 def InitializeDevice() :
@@ -366,12 +388,12 @@ def close() :
 def Injection() :
 
     mode_adc = 0  # set to one if ADC use
-    #reset_ram = 1  # set to one if clear RAM spectrum
+    #enable_high_filter = 0  # set to one if clear RAM spectrum
     #continuous_ready = 0  # generally set to zero set to one if filter analysis
     #start_capture = 1
 
     print("injection")
-    des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+    des.start_capture(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
 
     file_name = open('Signal_ADC_20keV.txt', "r")
     lines = file_name.readlines()
@@ -396,12 +418,12 @@ def Injection() :
 def ADC() :
 
     mode_adc = 1  # set to one if ADC use
-    #reset_ram = 1  # set to one if clear RAM spectrum
+    #enable_high_filter = 0  # set to one to enable spectre on high filter
     #continuous_ready = 0  # generally set to zero set to one if filter analysis
     #start_capture = 1
 
     print("ADC")
-    des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+    des.start_capture(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
 
 def get_entry_TH(event) :
     valeur = v.get()
@@ -424,11 +446,26 @@ def get_gain_filtre0(event) :
     des.setwire_gain_filtre0(gain_filtre0)
     print(gain_filtre0)
 
+def gain_high_frequency0(event) :
+    valeur = v2.get()
+    print("gain_high_frequency0:",valeur)
+    gain_filtre0 = int(math.log2(int(valeur)))
+    des.setwire_gain_high_frequency0(gain_filtre0)
+    print(gain_filtre0)
+
+
 def get_gain_filtre1(event) :
     valeur = v3.get()
     print("get_gain_filtre1:",valeur)
     gain_filtre1 = int(math.log2(int(valeur)))
     des.setwire_gain_filtre1(gain_filtre1)
+    print(gain_filtre1)
+
+def gain_high_frequency1(event) :
+    valeur = v3.get()
+    print("gain_high_frequency1:",valeur)
+    gain_filtre1 = int(math.log2(int(valeur)))
+    des.setwire_gain_high_frequency1(gain_filtre1)
     print(gain_filtre1)
 
 racine = tk.Tk() #fait apparaitre fenetre principale
@@ -501,7 +538,7 @@ InitializeDevice()
 reset  = 1
 
 print ("RESET")
-des.ResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+des.ResetDES(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
 
 time.sleep(2)
 
@@ -510,12 +547,12 @@ time.sleep(2)
 reset  = 0
 
 print ("unRESET")
-des.unResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+des.unResetDES(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
 ########################################################################################################
 
 #################################  LOAD COEF  ###################################################
 print ("Coef")
-file = open('coef_V2.txt', "r")
+file = open('coef_V2_1.txt', "r")
 lines_coef = file.readlines()
 formated_lines_coef = []
 for elm in lines_coef :
@@ -529,7 +566,7 @@ adresse=0x81  # filter0
 des.setpipein(list_pipe_in_array,adresse)
 
 print ("Coef")
-file = open('coef_V2_1.txt', "r")
+file = open('coef_V2.txt', "r")
 lines_coef_1 = file.readlines()
 formated_lines_coef_1 = []
 for elm in lines_coef_1 :
@@ -556,6 +593,7 @@ TH_rise=30*32
 TH_rise=int(np.uint32(TH_rise))
 print(TH_rise)
 des.setwire_TH_rise(TH_rise)
+des.setwire_TH_rise_high_frequency(TH_rise)
 
 print ("set trigger_TH_fall")
 #level_trig=0xFFFF8EB8
@@ -563,6 +601,7 @@ TH_fall=30*32
 TH_fall=int(np.uint32(TH_fall))
 print(TH_fall)
 des.setwire_TH_fall(TH_fall)
+des.setwire_TH_fall_high_frequency(TH_fall)
 
 print ("set trigger_TH_ADC")
 #level_trig=0xFFFF8EB8
@@ -578,20 +617,27 @@ des.setwire_gain_filtre0(gain_filtre0)
 print(gain_filtre0)
 
 valeur = 2
-print("get_gain_filtre1:", valeur)
+print("gain_high_frequency0:", valeur)
+gain_filtre0 = int(math.log2(int(valeur)))
+des.setwire_gain_high_frequency0(gain_filtre0)
+print(gain_high_frequency0)
+
+
+valeur = 2
+print("gain_high_frequency1:", valeur)
 gain_filtre1 = int(math.log2(int(valeur)))
-des.setwire_gain_filtre1(gain_filtre1)
-print(gain_filtre0)
+des.setwire_gain_high_frequency1(gain_filtre1)
+print(gain_high_frequency1)
 
 
 
 ###################################  START CAPTURE  ###############################################
 
 start_capture  = 1
-reset_ram = 1 # set to one if clear RAM spectrum
+enable_high_filter = 0 # set to one if clear RAM spectrum
 
 print ("start_capture")
-des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+des.start_capture(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
 
 ###################################  IRQ time  ###############################################
 

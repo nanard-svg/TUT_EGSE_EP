@@ -108,7 +108,7 @@ architecture arch of TUT_EGSE is
     signal i_level_trigger              : STD_LOGIC_VECTOR(1 downto 0);
 
     signal pipe_in_confi_rd_data_count : Array_config_10stdx2_type;
-    signal coef_fir                    : Array_Array_config_32x16_type;
+    signal coef_fir                    : Array_Array_config_32x16_type_32x16_type;
 
     signal coef_fir_ready : STD_LOGIC_VECTOR(1 downto 0);
 
@@ -124,10 +124,12 @@ architecture arch of TUT_EGSE is
     signal data_rx_keeped  : std_logic_vector(15 downto 0);
     signal ready_rx_keeped : std_logic;
 
-    signal TH_rise      : std_logic_vector(31 downto 0);
-    signal TH_fall      : std_logic_vector(31 downto 0);
-    signal TH_ADC       : std_logic_vector(31 downto 0);
-    signal enable_erase : std_logic;
+    signal TH_rise : std_logic_vector(31 downto 0);
+    signal TH_fall : std_logic_vector(31 downto 0);
+    signal TH_ADC  : std_logic_vector(31 downto 0);
+
+    signal TH_rise_high_frequency : std_logic_vector(31 downto 0);
+    signal TH_fall_high_frequency : std_logic_vector(31 downto 0);
 
     signal pipe_out_spectrum_rd_en : STD_LOGIC_VECTOR(1 downto 0);
     signal pipe_out_spectrum_dout  : Array_config_32stdx2_type;
@@ -155,7 +157,9 @@ architecture arch of TUT_EGSE is
     signal din_fifo_raw_data            : Array_config_32signedx2_type;
     signal injection_started            : std_logic;
     signal continuous_injection         : std_logic;
+    signal enable_high_filter            : STD_LOGIC_VECTOR(1 downto 0);
     signal gain                         : Array_config_32stdx2_type;
+    signal gain_high_frequency          : Array_config_32stdx2_type;
     --signal data_after_gain              : Array_config_16signedx2_type;
     signal data_after_energy_level      : Array_config_16signedx2_type;
 
@@ -329,7 +333,8 @@ begin
     i_Start_Capture(1) <= ep00wire(1);
 
     reset                <= (not locked) or reset_wire;
-    --enable_erase         <= ep00wire(30);
+    enable_high_filter(0) <= ep00wire(30);
+    enable_high_filter(1) <= ep00wire(30);
     continuous_injection <= ep00wire(29);
 
     ------------------------------------------
@@ -450,10 +455,13 @@ begin
                 i_filter_number              => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
                 i_gain                       => unsigned(gain(N)),
+                i_gain_high_frequency        => unsigned(gain_high_frequency(N)),
                 i_TH_ADC                     => TH_ADC,
                 i_TH_rise                    => TH_rise,
                 i_TH_fall                    => TH_fall,
                 --i_enable_erase            => enable_erase,
+                i_TH_rise_high_frequency     => TH_rise_high_frequency,
+                i_TH_fall_high_frequency     => TH_fall_high_frequency,
                 -- input Data science
                 i_ready_CDC                  => i_ready_CDC,
                 i_data_CDC                   => i_data_CDC,
@@ -461,6 +469,7 @@ begin
                 --o_data_after_gain         => data_after_gain(N),
                 o_ready_after_gain           => ready_after_gain(N),
                 -- input coef filter
+                i_enable_high_filter          => enable_high_filter(N),
                 i_coef_fir                   => coef_fir(N),
                 i_coef_fir_ready             => coef_fir_ready(N),
                 -- out view
@@ -737,9 +746,9 @@ begin
 
     --ep25wire <= spectrum_count_pulse(1);
 
-    ------------------------------------------
-    --  Front Panel for filter 0 and globald drive
-    ------------------------------------------
+    ---------------------------------------------------------------------
+    --  Front Panel for filter 0 and globald drive for high definition
+    -------------------------------------------------------------------------
 
     --  okwire OR
     okWO : okWireOR generic map(N => 19) port map(okEH => okEH, okEHx => okEHx);
@@ -775,9 +784,9 @@ begin
     --  pipe out spectrum
     epA2 : okPipeOut port map(okHE => okHE, okEH => okEHx(7 * 65 - 1 downto 6 * 65), ep_addr => x"A2", ep_read => pipe_out_spectrum_rd_en(0), ep_datain => pipe_out_spectrum_dout(0));
 
-    ------------------------------------------
-    --  Front Panel for filter 1
-    ------------------------------------------
+    --------------------------------------------------------------------------
+    --  Front Panel for filter 1 for high definition
+    --------------------------------------------------------------------------
 
     --  read wire out for FIFO pipe out science.
     ep23 : okWireOut port map(okHE => okHE, okEH => okEHx(8 * 65 - 1 downto 7 * 65), ep_addr => x"23", ep_datain => ep20wire(1));
@@ -792,9 +801,9 @@ begin
     --  pipe out spectrum
     epA4 : okPipeOut port map(okHE => okHE, okEH => okEHx(13 * 65 - 1 downto 12 * 65), ep_addr => x"A4", ep_read => pipe_out_spectrum_rd_en(1), ep_datain => pipe_out_spectrum_dout(1));
 
-    ------------------------------------------
+    -----------------------------------------------------------------------------
     --  Front Panel only for standard definition
-    ------------------------------------------
+    -----------------------------------------------------------------------------
 
     --  pipe out spectrum sd
     epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_sd_rd_en(0), ep_datain => pipe_out_spectrum_sd_dout(0));
@@ -806,13 +815,10 @@ begin
     --  read wire out for FIFO pipe out spectrum sd
     ep27 : okWireOut port map(okHE => okHE, okEH => okEHx(17 * 65 - 1 downto 16 * 65), ep_addr => x"27", ep_datain => ep26wire(1));
 
-
     --  read wire out spectrum_count_pulse sd
     ep28 : okWireOut port map(okHE => okHE, okEH => okEHx(18 * 65 - 1 downto 17 * 65), ep_addr => x"28", ep_datain => ep28wire(0));
     --  read wire out spectrum_count_pulse sd
     ep29 : okWireOut port map(okHE => okHE, okEH => okEHx(19 * 65 - 1 downto 18 * 65), ep_addr => x"29", ep_datain => ep28wire(1));
-
-
 
     ------------------------------------------
     -- ALL
@@ -821,5 +827,24 @@ begin
     --ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"26", ep_datain => ep26wire;
     --  pipe out spectrum
     --epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(15 * 65 - 1 downto 14 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_all_rd_en, ep_datain => pipe_out_spectrum_all_dout;
+
+    -----------------------------------------------------------------------------
+    --  Front Panel only for configuration high frequency filter
+    -----------------------------------------------------------------------------
+
+    --  level TH_rise
+    ep08 : okWireIn port map(okHE => okHE, ep_addr => x"08", ep_dataout => TH_rise_high_frequency);
+    --  level TH_fall
+    ep09 : okWireIn port map(okHE => okHE, ep_addr => x"09", ep_dataout => TH_fall_high_frequency);
+
+    --  level gain
+    ep0A : okWireIn port map(okHE => okHE, ep_addr => x"0A", ep_dataout => gain_high_frequency(0));
+    --  level gain
+    ep0B : okWireIn port map(okHE => okHE, ep_addr => x"0B", ep_dataout => gain_high_frequency(1));
+
+    --    gain_high_frequency(0) <= std_logic_vector(to_signed(2, 32));
+    --    gain_high_frequency(1) <= std_logic_vector(to_signed(2, 32));
+    --    TH_rise_high_frequency <= std_logic_vector(to_signed(100, 32));
+    --    TH_fall_high_frequency <= std_logic_vector(to_signed(50, 32));
 
 end arch;
