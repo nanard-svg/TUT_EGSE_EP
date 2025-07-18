@@ -132,7 +132,13 @@ class DeviceController:
         data = np.ones(1028).astype(int)
         self.xem.ReadFromPipeOut(address, data)
         return data
-    
+
+    # Méthode pour lire depuis un tube de sortie
+    def get_pipe_out_sd(self, address):
+        data = np.ones(12).astype(int)
+        self.xem.ReadFromPipeOut(address, data)
+        return data
+
 #################################### Classes pour la gestion des données et de l'interface ####################################
 
 # Classe pour traiter les données
@@ -989,8 +995,8 @@ class Application:
        diff_time = current_time - self.start_time
            
        if  get == 1028:
-           print("get == 1028")
-           print(f"read pointer spectrum filter 0: {get}")
+           #print("get == 1028")
+           #print(f"read pointer spectrum filter 0: {get}")
            address_pipe_out_read = 0xA2
            data = self.device_controller.get_pipe_out(address_pipe_out_read)
            
@@ -1010,8 +1016,8 @@ class Application:
            get = self.device_controller.get_wire(address_wire_out)
           
            if  get == 1028:
-               print("get == 1028")
-               print(f"read pointer spectrum filter 1: {get}")
+               #print("get == 1028")
+               #print(f"read pointer spectrum filter 1: {get}")
                address_pipe_out_read = 0xA4
                data1 = self.device_controller.get_pipe_out(address_pipe_out_read)
                ####################################################
@@ -1022,7 +1028,66 @@ class Application:
                # print("\ndata = {}".format(data1))
        
                self.gui_manager.update_plot(spectre, spectre1)
-               
+
+               address_wire_out = 0x26  # filter 0 SD
+               get = self.device_controller.get_wire(address_wire_out)
+
+               if get == 12:
+                   print("############# Spectrum filter 0 standard definition #########################################################")
+                   print("read pointer spectrum filter 0 standard definition : {}".format(get))
+                   adresse_pipe_out_read = 0xA5  # filter0
+                   data1 = self.device_controller.get_pipe_out_sd(adresse_pipe_out_read)
+                   list_array_pipe_out_standard_definition = list(data1)
+
+                   for element in list_array_pipe_out_standard_definition:
+                       print("spectrum SD filter 0", self.data_processor1.tohex(element, 32))
+
+                   address_wire_out = 0x28
+                   get = self.device_controller.get_wire(address_wire_out)
+
+                   print("############################################")
+                   print("read counter pulse filter Standard definition 0 add=0x28 {}".format(get))
+                   print("############################################")
+
+                   address_wire_out = 0x27  # filter 1 SD
+                   get = self.device_controller.get_wire(address_wire_out)
+                   print("###############################################################################################################")
+
+                   if get == 12:
+                       print("############# Spectrum filter 1 standard definition #########################################################")
+                       print("read pointer spectrum filter 1 standard definition : {}".format(get))
+                       adresse_pipe_out_read = 0xA6  # filter1
+                       data1 = self.device_controller.get_pipe_out_sd(adresse_pipe_out_read)
+                       list_array_pipe_out_standard_definition = list(data1)
+
+                       for element in list_array_pipe_out_standard_definition:
+                           print("spectrum SD filter 1", self.data_processor1.tohex(element, 32))
+
+                       address_wire_out = 0x29
+                       get = self.device_controller.get_wire(address_wire_out)
+
+                       print("############################################")
+                       print("read counter pulse filter Standard definition 1 add=0x29 {}".format(get))
+                       print("############################################")
+
+                       # print("################################ DATA of  spectrum filter 1 #############################################")
+                       print("###############################################################################################################")
+
+                       address_wire_out = 0x25
+                       self.device_controller.get_wire(address_wire_out)
+
+                       print("############################################")
+                       print(f"read counter pulse filter 1 add=0x25 {self.device_controller.get_wire(address_wire_out)}")
+                       print("############################################")
+
+                       address_wire_out = 0x22
+                       self.device_controller.get_wire(address_wire_out)
+                       print("############################################")
+                       print(f"read counter pulse filter 0 add=0x22 {self.device_controller.get_wire(address_wire_out)}")
+                       print("############################################")
+
+                       print(f"valeur de la variable mode_adc {self.mode_adc}")
+
        if self.init_spectrum == True :
 
            self.data_processor.spectre = [0 for _ in range(1024)]
@@ -1032,20 +1097,7 @@ class Application:
            # self.gui_manager.update_plot.plot1.clear()
                #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #   #
                
-       address_wire_out = 0x25
-       self.device_controller.get_wire(address_wire_out)
-       
-       print("############################################")
-       print(f"read counter pulse filter 1 add=0x25 {self.device_controller.get_wire(address_wire_out)}")
-       print("############################################")
 
-       address_wire_out = 0x22
-       self.device_controller.get_wire(address_wire_out)
-       print("############################################")
-       print(f"read counter pulse filter 0 add=0x22 {self.device_controller.get_wire(address_wire_out)}")
-       print("############################################")
-       
-       print(f"valeur de la variable mode_adc {self.mode_adc}")
        
 
 if __name__ == "__main__":
