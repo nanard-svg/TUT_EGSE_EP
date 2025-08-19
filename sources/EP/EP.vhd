@@ -33,7 +33,7 @@ entity EP is
         --o_data_after_gain         : out signed(15 downto 0);
         o_ready_after_gain           : out std_logic;
         --coef
-        i_enable_high_filter          : in  std_logic;
+        i_enable_high_filter         : in  std_logic;
         i_coef_fir                   : in  Array_Array_config_32x16_type;
         i_coef_fir_ready             : in  std_logic;
         o_data_before_filter         : out signed(15 downto 0);
@@ -138,8 +138,6 @@ begin
                 o_ready          => ready_after_filter(N)
             );
     end generate generate_label_FIR_filter;
-
-
 
     o_data_before_filter <= data_before_filter(0) when i_enable_high_filter = '0' else data_before_filter(1);
 

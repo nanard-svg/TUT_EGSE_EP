@@ -1,7 +1,7 @@
 // Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2022.2 (win64) Build 3671981 Fri Oct 14 05:00:03 MDT 2022
-// Date        : Thu Apr 17 10:35:16 2025
+// Date        : Thu Jul 10 16:48:01 2025
 // Host        : IRLW245164 running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode synth_stub
 //               c:/3utransat/TUT_EGSE_EP_ads7049_branch/Vivado/TUT_EGSE_EP.gen/sources_1/ip/fifo_pipe_out_w32_2048_r32_2048/fifo_pipe_out_w32_2048_r32_2048_stub.v

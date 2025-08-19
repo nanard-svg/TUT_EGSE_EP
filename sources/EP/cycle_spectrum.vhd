@@ -38,7 +38,7 @@ begin
                 when init =>
 
                     init_count_synchro_spectrum <= init_count_synchro_spectrum + 1;
-                    if To_integer(init_count_synchro_spectrum) >= (2000 * To_integer(i_detector_number)) then
+                    if To_integer(init_count_synchro_spectrum) >= (2056 * To_integer(i_detector_number)) then
                         state <= run;
                     end if;
 

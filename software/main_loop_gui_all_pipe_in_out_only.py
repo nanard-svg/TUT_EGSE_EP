@@ -41,8 +41,8 @@ def save_signal_in_file (Signal_out) :
 
 ############################### classe OK
 
-array_pipe_out = np.ones(1028).astype(int)
-array_pipe_out_sd = np.ones(12).astype(int)
+array_pipe_out = np.ones(2056).astype(int)
+array_pipe_out_sd = np.ones(24).astype(int)
 list_array_pipe_out_MSB = []
 list_array_pipe_out_LSB = []
 list_array_pipe_out1_MSB = []
@@ -205,102 +205,85 @@ def delay_end(fig):
     #print("delay_end")
     #print("############## read pointer spectrum filter 0 #####################")
 
-    adress_wire_out_science = 0x24  # filter 1
+
+    adress_wire_out_science = 0x21  # filter 0
     des.getwire(adress_wire_out_science)
 
-    if get == 1028 :
-        #print("read pointer spectrum filter 1 : {}".format(get))
-        #print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
-        adresse_pipe_out_read = 0xA4         #filter1
-        des.getpipeout(adresse_pipe_out_read)
-        list_array_pipe_out1 = list(array_pipe_out)
 
-        adress_wire_out_science = 0x21  # filter 0
+    if get == 2056:
+        #print("read pointer spectrum filter 0 : {}".format(get))
+        # print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
+        adresse_pipe_out_read = 0xA2  # filter1
+        des.getpipeout(adresse_pipe_out_read)
+        list_array_pipe_out = list(array_pipe_out)
+
+
+        adress_wire_out_science = 0x26  # filter 0 SD
         des.getwire(adress_wire_out_science)
 
-        if get == 1028:
-            #print("read pointer spectrum filter 0 : {}".format(get))
-            # print("################################ READ FIFO  Pipe spectrum filter 0 #############################################")
-            adresse_pipe_out_read = 0xA2  # filter1
-            des.getpipeout(adresse_pipe_out_read)
-            list_array_pipe_out = list(array_pipe_out)
+        if get == 24:
 
-            adress_wire_out_science = 0x26  # filter 0 SD
+            print("read pointer spectrum filter 0 standard definition : {}".format(get))
+            adresse_pipe_out_read = 0xA5  # filter0
+            des.getpipeout_sd(adresse_pipe_out_read)
+            list_array_pipe_out_standard_definition = list(array_pipe_out_sd)
+
+            for element in list_array_pipe_out_standard_definition[0:11]:
+                print("spectrum SD filter 0", tohex(element, 32))
+
+            for element in list_array_pipe_out_standard_definition[11:23]:
+                print("spectrum SD filter 1", tohex(element, 32))
+
+            adress_wire_out_science = 0x28
             des.getwire(adress_wire_out_science)
 
-            if get == 12:
+            print("############################################")
+            print("read counter pulse filter Standard definition detector 0 add=0x28 {}".format(get))
+            print("############################################")
 
-                print("read pointer spectrum filter 0 standard definition : {}".format(get))
-                adresse_pipe_out_read = 0xA5  # filter0
-                des.getpipeout_sd(adresse_pipe_out_read)
-                list_array_pipe_out_standard_definition = list(array_pipe_out_sd)
+            adress_wire_out_science = 0x29
+            des.getwire(adress_wire_out_science)
 
-                for element in list_array_pipe_out_standard_definition:
-                    print("spectrum SD filter 0", tohex(element, 32))
-
-                adress_wire_out_science = 0x28
-                des.getwire(adress_wire_out_science)
-
-                print("############################################")
-                print("read counter pulse filter Standard definition 0 add=0x28 {}".format(get))
-                print("############################################")
-
-                adress_wire_out_science = 0x27  # filter 1 SD
-                des.getwire(adress_wire_out_science)
+            print("############################################")
+            print("read counter pulse filter Standard definition  detector 1 add=0x29 {}".format(get))
+            print("############################################")
 
 
-                if get == 12:
+            #print("################################ DATA of  spectrum filter 1 #############################################")
+            for elm in list_array_pipe_out[4:1027] :
+                #print(type(elm))
+                #list_array_pipe_out_MSB.append(int(elm/2**16))
+                list_array_pipe_out_MSB.append(np.short((elm & 0xFFFF0000)/2**16))
+                #print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
+                list_array_pipe_out_LSB.append(np.short(elm & 0xFFFF))
+                #print("energy : {}".format(np.short(elm & 0xFFFF)))
 
-                    print("read pointer spectrum filter 1 standard definition : {}".format(get))
-                    adresse_pipe_out_read = 0xA6  # filter1
-                    des.getpipeout_sd(adresse_pipe_out_read)
-                    list_array_pipe_out_standard_definition = list(array_pipe_out_sd)
+                if (np.short(elm & 0xFFFF)) != 0:
+                    #print("spectrum", tohex(elm, 32))
 
-                    for element in list_array_pipe_out_standard_definition:
-                        print("spectrum SD filter 1", tohex(element, 32))
-
-                    adress_wire_out_science = 0x29
-                    des.getwire(adress_wire_out_science)
-
-                    print("############################################")
-                    print("read counter pulse filter Standard definition 1 add=0x29 {}".format(get))
-                    print("############################################")
-
-                    #print("################################ DATA of  spectrum filter 1 #############################################")
-                    for elm in list_array_pipe_out[4:] :
-                        #print(type(elm))
-                        #list_array_pipe_out_MSB.append(int(elm/2**16))
-                        list_array_pipe_out_MSB.append(np.short((elm & 0xFFFF0000)/2**16))
-                        #print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
-                        list_array_pipe_out_LSB.append(np.short(elm & 0xFFFF))
-                        #print("energy : {}".format(np.short(elm & 0xFFFF)))
-
-                        if (np.short(elm & 0xFFFF)) != 0:
-                            #print("spectrum", tohex(elm, 32))
-
-                            # Construction du spectre
-                            add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
-                            data = (elm & 0xFFFF)  # Ajout GO
-                            Spectre[add] = Spectre[add] + data  # Ajout GO
-                            # Spectre[add] = data
+                    # Construction du spectre
+                    add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
+                    data = (elm & 0xFFFF)  # Ajout GO
+                    Spectre[add] = Spectre[add] + data  # Ajout GO
+                    # Spectre[add] = data
 
 
-                    for elm in list_array_pipe_out1[4:]:
-                        # print(type(elm))
-                        # list_array_pipe_out_MSB.append(int(elm/2**16))
-                        list_array_pipe_out1_MSB.append(np.short((elm & 0xFFFF0000) / 2 ** 16))
-                        # print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
-                        list_array_pipe_out1_LSB.append(np.short(elm & 0xFFFF))
-                        # print("energy : {}".format(np.short(elm & 0xFFFF)))
+            for elm in list_array_pipe_out[1032:2055]:
+                # print(type(elm))
+                # list_array_pipe_out_MSB.append(int(elm/2**16))
+                list_array_pipe_out1_MSB.append(np.short((elm & 0xFFFF0000) / 2 ** 16))
+                # print("address : {}".format(np.short((elm & 0xFFFF0000) / 2 ** 16)))
+                list_array_pipe_out1_LSB.append(np.short(elm & 0xFFFF))
+                # print("energy : {}".format(np.short(elm & 0xFFFF)))
 
-                        if (np.short(elm & 0xFFFF)) != 0:
-                            #print("spectrum", tohex(elm, 32))
+                if (np.short(elm & 0xFFFF)) != 0:
+                    #print("spectrum", tohex(elm, 32))
 
-                            # Construction du spectre
-                            add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
-                            data = (elm & 0xFFFF)  # Ajout GO
-                            Spectre1[add] = Spectre1[add] + data  # Ajout GO
-                            # Spectre1[add] = data
+                    # Construction du spectre
+                    add = int(((elm & 0xFFFF0000) / 2 ** 16))  # Ajout GO
+                    data = (elm & 0xFFFF)  # Ajout GO
+                    Spectre1[add] = Spectre1[add] + data  # Ajout GO
+                    # Spectre1[add] = data
 
         # racine.bind("<BackSpace>",  clear_vect())
 
@@ -486,7 +469,7 @@ def gain_high_frequency0(event) :
     print("gain_high_frequency0:",valeur)
     gain_filtre0 = int(math.log2(int(valeur)))
 
-    formated_lines_coef[135] = gain_filtre0
+    formated_lines_coef[136] = gain_filtre0
 
     for index, fruit in enumerate(formated_lines_coef):
         print(f"L'index {index} correspond à : {fruit}")
@@ -522,7 +505,7 @@ def get_gain_filtre1(event) :
     des.setwire_gain_filtre1(gain_filtre1)
     print(gain_filtre1)
 
-    formated_lines_coef[135] = gain_filtre1
+    formated_lines_coef[137] = gain_filtre1
 
     for index, fruit in enumerate(formated_lines_coef):
         print(f"L'index {index} correspond à : {fruit}")
@@ -553,7 +536,7 @@ def gain_high_frequency1(event) :
     des.setwire_gain_high_frequency1(gain_filtre1)
     print(gain_filtre1)
 
-    formated_lines_coef[135] = gain_filtre1
+    formated_lines_coef[138] = gain_filtre1
 
     for index, fruit in enumerate(formated_lines_coef):
         print(f"L'index {index} correspond à : {fruit}")
@@ -672,7 +655,7 @@ des.setpipein(list_pipe_in_array,adresse)
 ###################################  START CAPTURE  ###############################################
 
 start_capture  = 1
-enable_high_filter = 0 # set to one if clear RAM spectrum
+enable_high_filter = 1 # set to one if clear RAM spectrum
 
 print ("start_capture")
 des.start_capture(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))

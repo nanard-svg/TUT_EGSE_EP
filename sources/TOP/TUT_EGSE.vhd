@@ -53,13 +53,13 @@ architecture arch of TUT_EGSE is
     signal okClk : STD_LOGIC;
     signal okHE  : STD_LOGIC_VECTOR(112 downto 0);
     signal okEH  : STD_LOGIC_VECTOR(64 downto 0);
-    signal okEHx : STD_LOGIC_VECTOR(65 * 19 - 1 downto 0);
+    signal okEHx : STD_LOGIC_VECTOR(65 * 14 - 1 downto 0);
 
     signal ep00wire : STD_LOGIC_VECTOR(31 downto 0);
     signal ep20wire : Array_config_32stdx2_type;
-    signal ep21wire : Array_config_32stdx2_type;
+    signal ep21wire : STD_LOGIC_VECTOR(31 downto 0);
     signal ep22wire : Array_config_32stdx2_type;
-    signal ep26wire : Array_config_32stdx2_type;
+    signal ep26wire : STD_LOGIC_VECTOR(31 downto 0);
     signal ep28wire : Array_config_32stdx2_type;
 
     signal reset : std_logic;
@@ -85,13 +85,13 @@ architecture arch of TUT_EGSE is
 
     signal ep01wire : STD_LOGIC_VECTOR(31 downto 0);
 
-    signal pipe_in_config_din   : Array_config_32stdx2_type;
-    signal pipe_in_config_wr_en : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_in_config_rd_en : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_in_config_dout  : Array_config_32stdx2_type;
+    signal pipe_in_config_din   : STD_LOGIC_VECTOR(31 downto 0);
+    signal pipe_in_config_wr_en : std_logic;
+    signal pipe_in_config_rd_en : std_logic;
+    signal pipe_in_config_dout  : STD_LOGIC_VECTOR(31 downto 0);
 
-    signal pipe_in_config_empty : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_in_config_valid : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_in_config_empty : std_logic;
+    signal pipe_in_config_valid : std_logic;
 
     signal reset_wire                 : std_logic;
     signal locked                     : std_logic;
@@ -107,10 +107,11 @@ architecture arch of TUT_EGSE is
     signal i_Start_Capture              : STD_LOGIC_VECTOR(1 downto 0);
     signal i_level_trigger              : STD_LOGIC_VECTOR(1 downto 0);
 
-    signal pipe_in_confi_rd_data_count : Array_config_10stdx2_type;
+    signal pipe_in_confi_rd_data_count : std_logic_vector(9 downto 0);
     signal coef_fir                    : Array_Array_config_32x16_type_32x16_type;
+    signal i_coef_fir_ready            : STD_LOGIC_VECTOR(1 downto 0);
 
-    signal coef_fir_ready : STD_LOGIC_VECTOR(1 downto 0);
+    signal coef_fir_ready : std_logic;
 
     signal rd_fifo_pipe_out_data_count_raw_data : Array_config_11stdx2_type;
 
@@ -131,35 +132,42 @@ architecture arch of TUT_EGSE is
     signal TH_rise_high_frequency : std_logic_vector(31 downto 0);
     signal TH_fall_high_frequency : std_logic_vector(31 downto 0);
 
-    signal pipe_out_spectrum_rd_en : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_spectrum_dout  : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_rd_en : std_logic;
+    signal pipe_out_spectrum_dout  : std_logic_vector(31 downto 0);
 
-    signal pipe_out_spectrum_sd_rd_en : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_spectrum_sd_dout  : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_sd_rd_en : std_logic;
+    signal pipe_out_spectrum_sd_dout  : std_logic_vector(31 downto 0);
 
-    signal pipe_out_spectrum_din    : Array_config_32stdx2_type;
-    signal pipe_out_spectrum_sd_din : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_din      : std_logic_vector(31 downto 0);
+    signal o_pipe_out_spectrum_din    : Array_config_32stdx2_type;
+    signal o_pipe_out_spectrum_sd_din : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_sd_din   : std_logic_vector(31 downto 0);
 
-    signal pipe_out_spectrum_wr_en            : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_spectrum_sd_wr_en         : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_rd_data_count_spectrum    : Array_config_11stdx2_type;
-    signal pipe_out_rd_data_count_spectrum_sd : Array_config_11stdx2_type;
+    signal pipe_out_spectrum_wr_en            : std_logic;
+    signal o_pipe_out_spectrum_wr_en          : STD_LOGIC_VECTOR(1 downto 0);
+    signal o_pipe_out_spectrum_sd_wr_en       : STD_LOGIC_VECTOR(1 downto 0);
+    signal pipe_out_spectrum_sd_wr_en         : std_logic;
+    signal pipe_out_rd_data_count_spectrum    : STD_LOGIC_VECTOR(11 downto 0);
+    signal pipe_out_rd_data_count_spectrum_sd : STD_LOGIC_VECTOR(10 downto 0);
 
-    signal pipe_out_spectrum_wr_en_fifo : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_spectrum_din_fifo   : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_wr_en_fifo : std_logic;
+    signal pipe_out_spectrum_din_fifo   : std_logic_vector(31 downto 0);
     signal spectrum_count_pulse         : Array_config_32stdx2_type;
     signal spectrum_sd_count_pulse      : Array_config_32stdx2_type;
 
-    signal pipe_out_spectrum_sd_wr_en_fifo : STD_LOGIC_VECTOR(1 downto 0);
-    signal pipe_out_spectrum_sd_din_fifo   : Array_config_32stdx2_type;
+    signal pipe_out_spectrum_sd_wr_en_fifo : std_logic;
+    signal pipe_out_spectrum_sd_din_fifo   : std_logic_vector(31 downto 0);
 
     signal empty_fifo_pipe_out_raw_data : STD_LOGIC_VECTOR(1 downto 0);
     signal din_fifo_raw_data            : Array_config_32signedx2_type;
     signal injection_started            : std_logic;
     signal continuous_injection         : std_logic;
-    signal enable_high_filter            : STD_LOGIC_VECTOR(1 downto 0);
-    signal gain                         : Array_config_32stdx2_type;
+    signal enable_high_filter           : STD_LOGIC_VECTOR(1 downto 0);
+    signal i_gain                       : Array_config_32stdx2_type;
+    signal i_gain_high_frequency        : Array_config_32stdx2_type;
+    signal gain                         : Array_Array_config_32stdx2_type;
     signal gain_high_frequency          : Array_config_32stdx2_type;
+    signal reg_config                   : Array_config_32stdx8_type;
     --signal data_after_gain              : Array_config_16signedx2_type;
     signal data_after_energy_level      : Array_config_16signedx2_type;
 
@@ -332,10 +340,10 @@ begin
     i_Start_Capture(0) <= ep00wire(1);
     i_Start_Capture(1) <= ep00wire(1);
 
-    reset                <= (not locked) or reset_wire;
+    reset                 <= (not locked) or reset_wire;
     enable_high_filter(0) <= ep00wire(30);
     enable_high_filter(1) <= ep00wire(30);
-    continuous_injection <= ep00wire(29);
+    continuous_injection  <= ep00wire(29);
 
     ------------------------------------------
     -- Instantiate the okHost and connect endpoints
@@ -454,8 +462,8 @@ begin
                 i_enable_cycle_spectrum      => enable_cycle_spectrum(N),
                 i_filter_number              => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
-                i_gain                       => unsigned(gain(N)),
-                i_gain_high_frequency        => unsigned(gain_high_frequency(N)),
+                i_gain                       => unsigned(i_gain(N)),
+                i_gain_high_frequency        => unsigned(i_gain_high_frequency(N)),
                 i_TH_ADC                     => TH_ADC,
                 i_TH_rise                    => TH_rise,
                 i_TH_fall                    => TH_fall,
@@ -469,44 +477,57 @@ begin
                 --o_data_after_gain         => data_after_gain(N),
                 o_ready_after_gain           => ready_after_gain(N),
                 -- input coef filter
-                i_enable_high_filter          => enable_high_filter(N),
+                i_enable_high_filter         => enable_high_filter(N),
                 i_coef_fir                   => coef_fir(N),
-                i_coef_fir_ready             => coef_fir_ready(N),
+                i_coef_fir_ready             => i_coef_fir_ready(N),
                 -- out view
                 o_data_before_filter         => data_before_filter(N),
                 -- out spectrum to fifo pipe out
-                o_pipe_out_spectrum_din      => pipe_out_spectrum_din(N),
-                o_pipe_out_spectrum_wr_en    => pipe_out_spectrum_wr_en(N),
+                o_pipe_out_spectrum_din      => o_pipe_out_spectrum_din(N),
+                o_pipe_out_spectrum_wr_en    => o_pipe_out_spectrum_wr_en(N),
                 o_spectrum_count_pulse       => spectrum_count_pulse(N),
                 o_data_after_energy_level    => data_after_energy_level(N),
-                o_pipe_out_spectrum_sd_din   => pipe_out_spectrum_sd_din(N),
-                o_pipe_out_spectrum_sd_wr_en => pipe_out_spectrum_sd_wr_en(N),
+                o_pipe_out_spectrum_sd_din   => o_pipe_out_spectrum_sd_din(N),
+                o_pipe_out_spectrum_sd_wr_en => o_pipe_out_spectrum_sd_wr_en(N),
                 o_spectrum_sd_count_pulse    => spectrum_sd_count_pulse(N)
             );
     end generate generate_EP;
 
     ------------------------------------------
-    --  process trigger raw data
+    --  mux data spectrum packet
     ------------------------------------------ 
-    generate_lebel_process : for N IN 1 downto 0 generate
-        lebel_process : process(sys_clk, reset) is
-        begin
-            if reset = '1' then
-                pipe_out_spectrum_wr_en_fifo(N)    <= ('0');
-                pipe_out_spectrum_din_fifo(N)      <= (others => '0');
-                pipe_out_spectrum_sd_wr_en_fifo(N) <= ('0');
-                pipe_out_spectrum_sd_din_fifo(N)   <= (others => '0');
 
-            elsif rising_edge(sys_clk) then
-                pipe_out_spectrum_wr_en_fifo(N) <= pipe_out_spectrum_wr_en(N);
-                pipe_out_spectrum_din_fifo(N)   <= pipe_out_spectrum_din(N);
+    pipe_out_spectrum_din   <= o_pipe_out_spectrum_din(0) when o_pipe_out_spectrum_wr_en(0) = '1' else o_pipe_out_spectrum_din(1) when o_pipe_out_spectrum_wr_en(1) = '1';
+    pipe_out_spectrum_wr_en <= o_pipe_out_spectrum_wr_en(0) or o_pipe_out_spectrum_wr_en(1);
 
-                pipe_out_spectrum_sd_wr_en_fifo(N) <= pipe_out_spectrum_sd_wr_en(N);
-                pipe_out_spectrum_sd_din_fifo(N)   <= pipe_out_spectrum_sd_din(N);
+    ------------------------------------------
+    --  mux data spectrum packet SD
+    ------------------------------------------ 
 
-            end if;
-        end process;
-    end generate generate_lebel_process;
+    pipe_out_spectrum_sd_din   <= o_pipe_out_spectrum_sd_din(0) when o_pipe_out_spectrum_sd_wr_en(0) = '1' else o_pipe_out_spectrum_sd_din(1) when o_pipe_out_spectrum_sd_wr_en(1) = '1';
+    pipe_out_spectrum_sd_wr_en <= o_pipe_out_spectrum_sd_wr_en(0) or o_pipe_out_spectrum_sd_wr_en(1);
+
+    ------------------------------------------
+    --  process 
+    ------------------------------------------ 
+
+    lebel_process : process(sys_clk, reset) is
+    begin
+        if reset = '1' then
+            pipe_out_spectrum_wr_en_fifo    <= ('0');
+            pipe_out_spectrum_din_fifo      <= (others => '0');
+            pipe_out_spectrum_sd_wr_en_fifo <= ('0');
+            pipe_out_spectrum_sd_din_fifo   <= (others => '0');
+
+        elsif rising_edge(sys_clk) then
+            pipe_out_spectrum_wr_en_fifo <= pipe_out_spectrum_wr_en;
+            pipe_out_spectrum_din_fifo   <= pipe_out_spectrum_din;
+
+            pipe_out_spectrum_sd_wr_en_fifo <= pipe_out_spectrum_sd_wr_en;
+            pipe_out_spectrum_sd_din_fifo   <= pipe_out_spectrum_sd_din;
+
+        end if;
+    end process;
 
     ------------------------------------------
     --  FSM raw data
@@ -626,85 +647,106 @@ begin
     ------------------------------------------
     --  FIFO pipe_out spectrum
     ------------------------------------------
-    generate_fifo_pipe_out_specrum : for N IN 1 downto 0 generate
-        fifo_pipe_out_spectrum : entity work.fifo_pipe_out_w32_2048_r32_2048
-            port map(
-                rst           => reset,
-                wr_clk        => sys_clk,
-                rd_clk        => okClk,
-                din           => pipe_out_spectrum_din_fifo(N),
-                wr_en         => pipe_out_spectrum_wr_en_fifo(N),
-                rd_en         => pipe_out_spectrum_rd_en(N),
-                dout          => pipe_out_spectrum_dout(N),
-                full          => open,
-                empty         => open,
-                valid         => open,
-                rd_data_count => pipe_out_rd_data_count_spectrum(N),
-                wr_rst_busy   => open,
-                rd_rst_busy   => open
-            );
-    end generate generate_fifo_pipe_out_specrum;
+
+    fifo_pipe_out_spectrum : entity work.fifo_pipe_out_w32_4096_r32_4096
+        port map(
+            rst           => reset,
+            wr_clk        => sys_clk,
+            rd_clk        => okClk,
+            din           => pipe_out_spectrum_din_fifo,
+            wr_en         => pipe_out_spectrum_wr_en_fifo,
+            rd_en         => pipe_out_spectrum_rd_en,
+            dout          => pipe_out_spectrum_dout,
+            full          => open,
+            empty         => open,
+            valid         => open,
+            rd_data_count => pipe_out_rd_data_count_spectrum,
+            wr_rst_busy   => open,
+            rd_rst_busy   => open
+        );
 
     ------------------------------------------
     --  FIFO pipe_out spectrum standard definition
     ------------------------------------------
-    generate_fifo_pipe_out_spectrum_sd : for N IN 1 downto 0 generate
-        fifo_pipe_out_spectrum : entity work.fifo_pipe_out_w32_2048_r32_2048
-            port map(
-                rst           => reset,
-                wr_clk        => sys_clk,
-                rd_clk        => okClk,
-                din           => pipe_out_spectrum_sd_din_fifo(N),
-                wr_en         => pipe_out_spectrum_sd_wr_en_fifo(N),
-                rd_en         => pipe_out_spectrum_sd_rd_en(N),
-                dout          => pipe_out_spectrum_sd_dout(N),
-                full          => open,
-                empty         => open,
-                valid         => open,
-                rd_data_count => pipe_out_rd_data_count_spectrum_sd(N),
-                wr_rst_busy   => open,
-                rd_rst_busy   => open
-            );
-    end generate generate_fifo_pipe_out_spectrum_sd;
+
+    fifo_pipe_out_spectrum_SD : entity work.fifo_pipe_out_w32_2048_r32_2048
+        port map(
+            rst           => reset,
+            wr_clk        => sys_clk,
+            rd_clk        => okClk,
+            din           => pipe_out_spectrum_sd_din_fifo,
+            wr_en         => pipe_out_spectrum_sd_wr_en_fifo,
+            rd_en         => pipe_out_spectrum_sd_rd_en,
+            dout          => pipe_out_spectrum_sd_dout,
+            full          => open,
+            empty         => open,
+            valid         => open,
+            rd_data_count => pipe_out_rd_data_count_spectrum_sd,
+            wr_rst_busy   => open,
+            rd_rst_busy   => open
+        );
 
     ------------------------------------------
     --  FSM pipe_in config in co coef FIR filter
     ------------------------------------------
-    generate_label_FSM_pipe_in_config : for N IN 1 downto 0 generate
-        label_FSM_pipe_in_config : entity work.FSM_read_config
-            port map(
-                i_clk_slow              => sys_clk,
-                i_reset                 => reset,
-                i_pipe_in_config_empty  => pipe_in_config_empty(N),
-                i_pipe_in_config_valid  => pipe_in_config_valid(N),
-                i_pipe_in_config_dout   => signed(pipe_in_config_dout(N)),
-                i_pipe_in_rd_data_count => pipe_in_confi_rd_data_count(N),
-                o_pipe_in_config_rd_en  => pipe_in_config_rd_en(N),
-                o_coef_fir_ready        => coef_fir_ready(N),
-                o_coef_fir              => coef_fir(N)
-            );
-    end generate generate_label_FSM_pipe_in_config;
+
+    label_FSM_pipe_in_config : entity work.FSM_read_config
+        port map(
+            i_clk_slow              => sys_clk,
+            i_reset                 => reset,
+            i_pipe_in_config_empty  => pipe_in_config_empty,
+            i_pipe_in_config_valid  => pipe_in_config_valid,
+            i_pipe_in_config_dout   => signed(pipe_in_config_dout),
+            i_pipe_in_rd_data_count => pipe_in_confi_rd_data_count,
+            o_pipe_in_config_rd_en  => pipe_in_config_rd_en,
+            ----
+            o_coef_fir_ready        => coef_fir_ready,
+            o_coef_fir              => coef_fir,
+            ---
+            o_reg_config            => reg_config,
+            ----
+            o_gain                  => gain
+        );
+
+    ------------------------------------------
+    --  wrappe FSM_read_config to register
+    ------------------------------------------
+
+    i_coef_fir_ready(0)    <= coef_fir_ready;
+    i_coef_fir_ready(1)    <= coef_fir_ready;
+    i_gain                 <= gain(0);
+    i_gain_high_frequency  <= gain(1);
+    ----------------------------------
+    --ep00wire               <= reg_config(0);
+    ep01wire               <= reg_config(1);
+    TH_rise                <= reg_config(2);
+    TH_fall                <= reg_config(3);
+    TH_ADC                 <= reg_config(4);
+    level_DAC121S          <= reg_config(5);
+    TH_rise_high_frequency <= reg_config(6);
+    TH_fall_high_frequency <= reg_config(7);
+
     ------------------------------------------
     --  FIFO pipe_in config
     ------------------------------------------
-    generate_label_fifo_pipe_in_config : for N IN 1 downto 0 generate
-        fifo_pipe_in_config : entity work.fifo_pipe_in_w32_1024_r32_1024
-            port map(
-                rst           => reset,
-                wr_clk        => okClk,
-                rd_clk        => sys_clk,
-                din           => pipe_in_config_din(N),
-                wr_en         => pipe_in_config_wr_en(N),
-                rd_en         => pipe_in_config_rd_en(N),
-                dout          => pipe_in_config_dout(N),
-                full          => open,
-                empty         => pipe_in_config_empty(N),
-                valid         => pipe_in_config_valid(N),
-                rd_data_count => pipe_in_confi_rd_data_count(N),
-                wr_rst_busy   => open,
-                rd_rst_busy   => open
-            );
-    end generate generate_label_fifo_pipe_in_config;
+
+    fifo_pipe_in_config : entity work.fifo_pipe_in_w32_1024_r32_1024
+        port map(
+            rst           => reset,
+            wr_clk        => okClk,
+            rd_clk        => sys_clk,
+            din           => pipe_in_config_din,
+            wr_en         => pipe_in_config_wr_en,
+            rd_en         => pipe_in_config_rd_en,
+            dout          => pipe_in_config_dout,
+            full          => open,
+            empty         => pipe_in_config_empty,
+            valid         => pipe_in_config_valid,
+            rd_data_count => pipe_in_confi_rd_data_count,
+            wr_rst_busy   => open,
+            rd_rst_busy   => open
+        );
+
     ------------------------------------------
     --  wire out for FIFO pipe out science, wire out for FIFO pipe out spectrum
     ------------------------------------------
@@ -713,15 +755,16 @@ begin
         begin
             if reset = '1' then
                 ep20wire(N) <= (others => '0');
-                ep21wire(N) <= (others => '0');
+                ep21wire    <= (others => '0');
                 ep22wire(N) <= (others => '0');
+                ep26wire    <= (others => '0');
             --ep23wire <= (others => '0');
             --ep24wire <= (others => '0');
             elsif rising_edge(sys_clk) then
                 ep20wire(N) <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(N);
-                ep21wire(N) <= "000000000000000000000" & pipe_out_rd_data_count_spectrum(N);
+                ep21wire    <= "00000000000000000000" & pipe_out_rd_data_count_spectrum;
                 ep22wire(N) <= spectrum_count_pulse(N);
-                ep26wire(N) <= "000000000000000000000" & pipe_out_rd_data_count_spectrum_sd(N);
+                ep26wire <= "000000000000000000000" & pipe_out_rd_data_count_spectrum_sd;
                 ep28wire(N) <= spectrum_sd_count_pulse(N);
 
                 --ep23wire <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(1);
@@ -751,38 +794,38 @@ begin
     -------------------------------------------------------------------------
 
     --  okwire OR
-    okWO : okWireOR generic map(N => 19) port map(okEH => okEH, okEHx => okEHx);
+    okWO : okWireOR generic map(N => 14) port map(okEH => okEH, okEHx => okEHx);
     --  reset, start_capture
     ep00 : okWireIn port map(okHE => okHE, ep_addr => x"00", ep_dataout => ep00wire);
     --  level trig raw data
-    ep01 : okWireIn port map(okHE => okHE, ep_addr => x"01", ep_dataout => ep01wire);
+    --ep01 : okWireIn port map(okHE => okHE, ep_addr => x"01", ep_dataout => ep01wire);
     --  level TH_rise
-    ep02 : okWireIn port map(okHE => okHE, ep_addr => x"02", ep_dataout => TH_rise);
+    --ep02 : okWireIn port map(okHE => okHE, ep_addr => x"02", ep_dataout => TH_rise);
     --  level TH_fall
-    ep03 : okWireIn port map(okHE => okHE, ep_addr => x"03", ep_dataout => TH_fall);
+    --ep03 : okWireIn port map(okHE => okHE, ep_addr => x"03", ep_dataout => TH_fall);
     --  level gain
-    ep04 : okWireIn port map(okHE => okHE, ep_addr => x"04", ep_dataout => gain(0));
+    --ep04 : okWireIn port map(okHE => okHE, ep_addr => x"04", ep_dataout => gain(0));
     --  level gain
-    ep05 : okWireIn port map(okHE => okHE, ep_addr => x"05", ep_dataout => gain(1));
+    --ep05 : okWireIn port map(okHE => okHE, ep_addr => x"05", ep_dataout => gain(1));
     --  level DAC121S 
-    ep06 : okWireIn port map(okHE => okHE, ep_addr => x"06", ep_dataout => level_DAC121S);
+    --ep06 : okWireIn port map(okHE => okHE, ep_addr => x"06", ep_dataout => level_DAC121S);
     --  level TH_ADC
-    ep07 : okWireIn port map(okHE => okHE, ep_addr => x"07", ep_dataout => TH_ADC);
+    --ep07 : okWireIn port map(okHE => okHE, ep_addr => x"07", ep_dataout => TH_ADC);
 
     --  read wire out for FIFO pipe out science.
     ep20 : okWireOut port map(okHE => okHE, okEH => okEHx(1 * 65 - 1 downto 0 * 65), ep_addr => x"20", ep_datain => ep20wire(0));
     --  read wire out for FIFO pipe out spectrum.
-    ep21 : okWireOut port map(okHE => okHE, okEH => okEHx(2 * 65 - 1 downto 1 * 65), ep_addr => x"21", ep_datain => ep21wire(0));
+    ep21 : okWireOut port map(okHE => okHE, okEH => okEHx(2 * 65 - 1 downto 1 * 65), ep_addr => x"21", ep_datain => ep21wire);
     --  read wire out spectrum_count_pulse
     ep22 : okWireOut port map(okHE => okHE, okEH => okEHx(3 * 65 - 1 downto 2 * 65), ep_addr => x"22", ep_datain => ep22wire(0));
     --  pipe in injection
     ep80 : okPipeIn port map(okHE => okHE, okEH => okEHx(4 * 65 - 1 downto 3 * 65), ep_addr => x"80", ep_write => pipe_in_injection_wr_en_fifo, ep_dataout => pipe_in_injection_din_fifo);
     --  pipe in config
-    ep81 : okPipeIn port map(okHE => okHE, okEH => okEHx(5 * 65 - 1 downto 4 * 65), ep_addr => x"81", ep_write => pipe_in_config_wr_en(0), ep_dataout => pipe_in_config_din(0));
+    ep81 : okPipeIn port map(okHE => okHE, okEH => okEHx(5 * 65 - 1 downto 4 * 65), ep_addr => x"81", ep_write => pipe_in_config_wr_en, ep_dataout => pipe_in_config_din);
     --  pipe out raw data
     epA1 : okPipeOut port map(okHE => okHE, okEH => okEHx(6 * 65 - 1 downto 5 * 65), ep_addr => x"A1", ep_read => rd_en_fifo_pipe_out_raw_data(0), ep_datain => dout_fifo_pipe_out_raw_data(0));
     --  pipe out spectrum
-    epA2 : okPipeOut port map(okHE => okHE, okEH => okEHx(7 * 65 - 1 downto 6 * 65), ep_addr => x"A2", ep_read => pipe_out_spectrum_rd_en(0), ep_datain => pipe_out_spectrum_dout(0));
+    epA2 : okPipeOut port map(okHE => okHE, okEH => okEHx(7 * 65 - 1 downto 6 * 65), ep_addr => x"A2", ep_read => pipe_out_spectrum_rd_en, ep_datain => pipe_out_spectrum_dout);
 
     --------------------------------------------------------------------------
     --  Front Panel for filter 1 for high definition
@@ -791,34 +834,34 @@ begin
     --  read wire out for FIFO pipe out science.
     ep23 : okWireOut port map(okHE => okHE, okEH => okEHx(8 * 65 - 1 downto 7 * 65), ep_addr => x"23", ep_datain => ep20wire(1));
     --  read wire out for FIFO pipe out spectrum.
-    ep24 : okWireOut port map(okHE => okHE, okEH => okEHx(9 * 65 - 1 downto 8 * 65), ep_addr => x"24", ep_datain => ep21wire(1));
+    -- ep24 : okWireOut port map(okHE => okHE, okEH => okEHx(9 * 65 - 1 downto 8 * 65), ep_addr => x"24", ep_datain => ep21wire(1));
     --  read wire out read wire out spectrum_count_pulse
-    ep25 : okWireOut port map(okHE => okHE, okEH => okEHx(10 * 65 - 1 downto 9 * 65), ep_addr => x"25", ep_datain => ep22wire(1));
+    ep25 : okWireOut port map(okHE => okHE, okEH => okEHx(9 * 65 - 1 downto 8 * 65), ep_addr => x"25", ep_datain => ep22wire(1));
     --  pipe in config
-    ep82 : okPipeIn port map(okHE => okHE, okEH => okEHx(11 * 65 - 1 downto 10 * 65), ep_addr => x"82", ep_write => pipe_in_config_wr_en(1), ep_dataout => pipe_in_config_din(1));
+    --ep82 : okPipeIn port map(okHE => okHE, okEH => okEHx(11 * 65 - 1 downto 10 * 65), ep_addr => x"82", ep_write => pipe_in_config_wr_en(1), ep_dataout => pipe_in_config_din(1));
     --  pipe out raw data
-    epA3 : okPipeOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"A3", ep_read => rd_en_fifo_pipe_out_raw_data(1), ep_datain => dout_fifo_pipe_out_raw_data(1));
+    epA3 : okPipeOut port map(okHE => okHE, okEH => okEHx(10 * 65 - 1 downto 9 * 65), ep_addr => x"A3", ep_read => rd_en_fifo_pipe_out_raw_data(1), ep_datain => dout_fifo_pipe_out_raw_data(1));
     --  pipe out spectrum
-    epA4 : okPipeOut port map(okHE => okHE, okEH => okEHx(13 * 65 - 1 downto 12 * 65), ep_addr => x"A4", ep_read => pipe_out_spectrum_rd_en(1), ep_datain => pipe_out_spectrum_dout(1));
+    --epA4 : okPipeOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"A4", ep_read => pipe_out_spectrum_rd_en(1), ep_datain => pipe_out_spectrum_dout(1));
 
     -----------------------------------------------------------------------------
     --  Front Panel only for standard definition
     -----------------------------------------------------------------------------
 
     --  pipe out spectrum sd
-    epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_sd_rd_en(0), ep_datain => pipe_out_spectrum_sd_dout(0));
+    epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(11 * 65 - 1 downto 10 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_sd_rd_en, ep_datain => pipe_out_spectrum_sd_dout);
     --  pipe out spectrum sd
-    epA6 : okPipeOut port map(okHE => okHE, okEH => okEHx(15 * 65 - 1 downto 14 * 65), ep_addr => x"A6", ep_read => pipe_out_spectrum_sd_rd_en(1), ep_datain => pipe_out_spectrum_sd_dout(1));
+    --epA6 : okPipeOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"A6", ep_read => pipe_out_spectrum_sd_rd_en(1), ep_datain => pipe_out_spectrum_sd_dout(1));
 
     --  read wire out for FIFO pipe out spectrum sd
-    ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(16 * 65 - 1 downto 15 * 65), ep_addr => x"26", ep_datain => ep26wire(0));
+    ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"26", ep_datain => ep26wire);
     --  read wire out for FIFO pipe out spectrum sd
-    ep27 : okWireOut port map(okHE => okHE, okEH => okEHx(17 * 65 - 1 downto 16 * 65), ep_addr => x"27", ep_datain => ep26wire(1));
+    --ep27 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"27", ep_datain => ep26wire(1));
 
     --  read wire out spectrum_count_pulse sd
-    ep28 : okWireOut port map(okHE => okHE, okEH => okEHx(18 * 65 - 1 downto 17 * 65), ep_addr => x"28", ep_datain => ep28wire(0));
+    ep28 : okWireOut port map(okHE => okHE, okEH => okEHx(13 * 65 - 1 downto 12 * 65), ep_addr => x"28", ep_datain => ep28wire(0));
     --  read wire out spectrum_count_pulse sd
-    ep29 : okWireOut port map(okHE => okHE, okEH => okEHx(19 * 65 - 1 downto 18 * 65), ep_addr => x"29", ep_datain => ep28wire(1));
+    ep29 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"29", ep_datain => ep28wire(1));
 
     ------------------------------------------
     -- ALL
@@ -833,14 +876,14 @@ begin
     -----------------------------------------------------------------------------
 
     --  level TH_rise
-    ep08 : okWireIn port map(okHE => okHE, ep_addr => x"08", ep_dataout => TH_rise_high_frequency);
+    --ep08 : okWireIn port map(okHE => okHE, ep_addr => x"08", ep_dataout => TH_rise_high_frequency);
     --  level TH_fall
-    ep09 : okWireIn port map(okHE => okHE, ep_addr => x"09", ep_dataout => TH_fall_high_frequency);
+    --ep09 : okWireIn port map(okHE => okHE, ep_addr => x"09", ep_dataout => TH_fall_high_frequency);
 
     --  level gain
-    ep0A : okWireIn port map(okHE => okHE, ep_addr => x"0A", ep_dataout => gain_high_frequency(0));
+    --ep0A : okWireIn port map(okHE => okHE, ep_addr => x"0A", ep_dataout => gain_high_frequency(0));
     --  level gain
-    ep0B : okWireIn port map(okHE => okHE, ep_addr => x"0B", ep_dataout => gain_high_frequency(1));
+    --ep0B : okWireIn port map(okHE => okHE, ep_addr => x"0B", ep_dataout => gain_high_frequency(1));
 
     --    gain_high_frequency(0) <= std_logic_vector(to_signed(2, 32));
     --    gain_high_frequency(1) <= std_logic_vector(to_signed(2, 32));
