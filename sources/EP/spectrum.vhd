@@ -13,7 +13,7 @@ entity spectrum is
         i_reset                   : in  std_logic;
         -- global select spectrum
         i_clk_synchro_spectrum    : in  std_logic;
-        i_enable_cycle_spectrum   : in  std_logic;
+        i_detector_number         : in  unsigned;
         i_filter_number           : in  std_logic_vector(0 downto 0);
         -- input from detect Energy level
         --i_enable_erase            : in  std_logic;
@@ -29,7 +29,7 @@ end entity spectrum;
 architecture RTL of spectrum is
 
     -- RAM 
-    type Array_addr_type is array (1 downto 0) of std_logic_vector((memory_add_size-1) downto 0);
+    type Array_addr_type is array (1 downto 0) of std_logic_vector((memory_add_size - 1) downto 0);
     signal addr : Array_addr_type;
     type Array_di_type is array (1 downto 0) of std_logic_vector(15 downto 0);
     signal di   : Array_di_type;
@@ -88,7 +88,7 @@ begin
                 i_filter_number           => i_filter_number,
                 -- synchro_spectrum
                 i_clk_synchro_spectrum    => i_clk_synchro_spectrum,
-                i_enable_cycle_spectrum   => i_enable_cycle_spectrum,
+                i_detector_number         => i_detector_number,
                 i_set_synchro_spectrum    => std_logic_vector(To_unsigned(N, 1)),
                 --i_enable_erase            => i_enable_erase,
                 -- RAM

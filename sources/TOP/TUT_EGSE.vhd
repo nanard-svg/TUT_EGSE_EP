@@ -55,17 +55,17 @@ architecture arch of TUT_EGSE is
     signal okEH  : STD_LOGIC_VECTOR(64 downto 0);
     signal okEHx : STD_LOGIC_VECTOR(65 * 14 - 1 downto 0);
 
-    signal ep00wire : STD_LOGIC_VECTOR(31 downto 0);
-    signal ep20wire : Array_config_32stdx2_type;
-    signal ep21wire : STD_LOGIC_VECTOR(31 downto 0);
-    signal ep22wire : Array_config_32stdx2_type;
-    signal ep26wire : STD_LOGIC_VECTOR(31 downto 0);
-    signal ep28wire : Array_config_32stdx2_type;
+    signal reg_global                  : STD_LOGIC_VECTOR(31 downto 0);
+    signal fifo_count_raw_data         : Array_config_32stdx2_type;
+    signal fifo_data_count_spectrum    : STD_LOGIC_VECTOR(31 downto 0);
+    signal reg_spectrum_count_pulse    : Array_config_32stdx2_type;
+    signal fifo_data_count_spectrum_sd : STD_LOGIC_VECTOR(31 downto 0);
+    signal reg_spectrum_sd_count_pulse : Array_config_32stdx2_type;
 
     signal reset : std_logic;
     signal count : unsigned(31 downto 0);
 
-    signal clk_synchro_spectrum  : STD_LOGIC_VECTOR(1 downto 0);
+    signal clk_synchro_spectrum  : std_logic;
     signal enable_cycle_spectrum : STD_LOGIC_VECTOR(1 downto 0);
     --signal clk_synchro_spectrum   : std_logic;
 
@@ -280,16 +280,12 @@ begin
     -- Cycle spectrum, DAC121S, integration time
     ------------------------------------------
 
-    generate_cycle_spectrum : for N IN 1 downto 0 generate
-        label_cycle_spectrum : entity work.cycle_spectrum
-            port map(
-                sys_clk                 => sys_clk,
-                reset                   => reset,
-                i_detector_number       => To_unsigned(N, 1),
-                o_clk_synchro_spectrum  => clk_synchro_spectrum(N),
-                o_enable_cycle_spectrum => enable_cycle_spectrum(N)
-            );
-    end generate generate_cycle_spectrum;
+    label_cycle_spectrum : entity work.cycle_spectrum
+        port map(
+            sys_clk                => sys_clk,
+            reset                  => reset,
+            o_clk_synchro_spectrum => clk_synchro_spectrum
+        );
 
     --    label_Cycle_spectrum : process(sys_clk, reset) is
     --    begin
@@ -335,15 +331,15 @@ begin
     --  global conf
     ------------------------------------------
 
-    reset_wire <= ep00wire(0);
+    reset_wire <= reg_global(0);
 
-    i_Start_Capture(0) <= ep00wire(1);
-    i_Start_Capture(1) <= ep00wire(1);
+    i_Start_Capture(0) <= reg_global(1);
+    i_Start_Capture(1) <= reg_global(1);
 
     reset                 <= (not locked) or reset_wire;
-    enable_high_filter(0) <= ep00wire(30);
-    enable_high_filter(1) <= ep00wire(30);
-    continuous_injection  <= ep00wire(29);
+    enable_high_filter(0) <= reg_global(30);
+    enable_high_filter(1) <= reg_global(30);
+    continuous_injection  <= reg_global(29);
 
     ------------------------------------------
     -- Instantiate the okHost and connect endpoints
@@ -442,8 +438,8 @@ begin
     --  MUX ADC OR Injection
     ------------------------------------------  
     -- data_rx_keeped  <= '0'&data_rx & b"000";  comment format
-    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped) when ep00wire(31) = '1' else ('0' & data_fast_injection(11 downto 0) & b"000");
-    label_mux_science_ready : i_ready_CDC <= ready_rx_keeped when ep00wire(31) = '1' else ready_fast_injection;
+    label_mux_science_data : i_data_CDC   <= signed(data_rx_keeped) when reg_global(31) = '1' else ('0' & data_fast_injection(11 downto 0) & b"000");
+    label_mux_science_ready : i_ready_CDC <= ready_rx_keeped when reg_global(31) = '1' else ready_fast_injection;
 
     ------------------------------------------
     --  EP
@@ -458,8 +454,8 @@ begin
                 -- ADC survey
                 --i_data_rx_keeped          => signed(data_rx_keeped),
                 -- global select spectrum
-                i_clk_synchro_spectrum       => clk_synchro_spectrum(N),
-                i_enable_cycle_spectrum      => enable_cycle_spectrum(N),
+                i_clk_synchro_spectrum       => clk_synchro_spectrum,
+                i_detector_number            => To_unsigned(N, 1),
                 i_filter_number              => std_logic_vector(To_unsigned(N, 1)),
                 -- input param trigger pick detect energy
                 i_gain                       => unsigned(i_gain(N)),
@@ -582,7 +578,7 @@ begin
                 i_level_trigger(N) <= '0';
             elsif rising_edge(sys_clk) then
                 --  test if injection mode to avoid trigger on value 0
-                if (signed(ep01wire(15 downto 0)) < data_before_filter(N) and injection_started = '1' and ep00wire(31) = '0') or (signed(ep01wire(15 downto 0)) < data_before_filter(N) and ep00wire(31) = '1') then
+                if (signed(ep01wire(15 downto 0)) < data_before_filter(N) and injection_started = '1' and reg_global(31) = '0') or (signed(ep01wire(15 downto 0)) < data_before_filter(N) and reg_global(31) = '1') then
                     i_level_trigger(N) <= '1';
                 else
                     i_level_trigger(N) <= '0';
@@ -717,12 +713,12 @@ begin
     i_gain                 <= gain(0);
     i_gain_high_frequency  <= gain(1);
     ----------------------------------
-    --ep00wire               <= reg_config(0);
+    --reg_global               <= reg_config(0);
     ep01wire               <= reg_config(1);
     TH_rise                <= reg_config(2);
     TH_fall                <= reg_config(3);
     TH_ADC                 <= reg_config(4);
-    level_DAC121S          <= reg_config(5);
+    --level_DAC121S          <= reg_config(5);
     TH_rise_high_frequency <= reg_config(6);
     TH_fall_high_frequency <= reg_config(7);
 
@@ -754,18 +750,18 @@ begin
         label_process_inter_wire : process(sys_clk, reset) is
         begin
             if reset = '1' then
-                ep20wire(N) <= (others => '0');
-                ep21wire    <= (others => '0');
-                ep22wire(N) <= (others => '0');
-                ep26wire    <= (others => '0');
+                fifo_count_raw_data(N)      <= (others => '0');
+                fifo_data_count_spectrum    <= (others => '0');
+                reg_spectrum_count_pulse(N) <= (others => '0');
+                fifo_data_count_spectrum_sd <= (others => '0');
             --ep23wire <= (others => '0');
             --ep24wire <= (others => '0');
             elsif rising_edge(sys_clk) then
-                ep20wire(N) <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(N);
-                ep21wire    <= "00000000000000000000" & pipe_out_rd_data_count_spectrum;
-                ep22wire(N) <= spectrum_count_pulse(N);
-                ep26wire <= "000000000000000000000" & pipe_out_rd_data_count_spectrum_sd;
-                ep28wire(N) <= spectrum_sd_count_pulse(N);
+                fifo_count_raw_data(N)         <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(N);
+                fifo_data_count_spectrum       <= "00000000000000000000" & pipe_out_rd_data_count_spectrum;
+                reg_spectrum_count_pulse(N)    <= spectrum_count_pulse(N);
+                fifo_data_count_spectrum_sd    <= "000000000000000000000" & pipe_out_rd_data_count_spectrum_sd;
+                reg_spectrum_sd_count_pulse(N) <= spectrum_sd_count_pulse(N);
 
                 --ep23wire <= "000000000000000000000" & rd_fifo_pipe_out_data_count_raw_data(1);
                 --ep24wire <= "000000000000000000000" & pipe_out_rd_data_count_spectrum(1);
@@ -796,28 +792,15 @@ begin
     --  okwire OR
     okWO : okWireOR generic map(N => 14) port map(okEH => okEH, okEHx => okEHx);
     --  reset, start_capture
-    ep00 : okWireIn port map(okHE => okHE, ep_addr => x"00", ep_dataout => ep00wire);
-    --  level trig raw data
-    --ep01 : okWireIn port map(okHE => okHE, ep_addr => x"01", ep_dataout => ep01wire);
-    --  level TH_rise
-    --ep02 : okWireIn port map(okHE => okHE, ep_addr => x"02", ep_dataout => TH_rise);
-    --  level TH_fall
-    --ep03 : okWireIn port map(okHE => okHE, ep_addr => x"03", ep_dataout => TH_fall);
-    --  level gain
-    --ep04 : okWireIn port map(okHE => okHE, ep_addr => x"04", ep_dataout => gain(0));
-    --  level gain
-    --ep05 : okWireIn port map(okHE => okHE, ep_addr => x"05", ep_dataout => gain(1));
+    ep00 : okWireIn port map(okHE => okHE, ep_addr => x"00", ep_dataout => reg_global);
     --  level DAC121S 
-    --ep06 : okWireIn port map(okHE => okHE, ep_addr => x"06", ep_dataout => level_DAC121S);
-    --  level TH_ADC
-    --ep07 : okWireIn port map(okHE => okHE, ep_addr => x"07", ep_dataout => TH_ADC);
-
+    ep06 : okWireIn port map(okHE => okHE, ep_addr => x"06", ep_dataout => level_DAC121S);
     --  read wire out for FIFO pipe out science.
-    ep20 : okWireOut port map(okHE => okHE, okEH => okEHx(1 * 65 - 1 downto 0 * 65), ep_addr => x"20", ep_datain => ep20wire(0));
+    ep20 : okWireOut port map(okHE => okHE, okEH => okEHx(1 * 65 - 1 downto 0 * 65), ep_addr => x"20", ep_datain => fifo_count_raw_data(0));
     --  read wire out for FIFO pipe out spectrum.
-    ep21 : okWireOut port map(okHE => okHE, okEH => okEHx(2 * 65 - 1 downto 1 * 65), ep_addr => x"21", ep_datain => ep21wire);
+    ep21 : okWireOut port map(okHE => okHE, okEH => okEHx(2 * 65 - 1 downto 1 * 65), ep_addr => x"21", ep_datain => fifo_data_count_spectrum);
     --  read wire out spectrum_count_pulse
-    ep22 : okWireOut port map(okHE => okHE, okEH => okEHx(3 * 65 - 1 downto 2 * 65), ep_addr => x"22", ep_datain => ep22wire(0));
+    ep22 : okWireOut port map(okHE => okHE, okEH => okEHx(3 * 65 - 1 downto 2 * 65), ep_addr => x"22", ep_datain => reg_spectrum_count_pulse(0));
     --  pipe in injection
     ep80 : okPipeIn port map(okHE => okHE, okEH => okEHx(4 * 65 - 1 downto 3 * 65), ep_addr => x"80", ep_write => pipe_in_injection_wr_en_fifo, ep_dataout => pipe_in_injection_din_fifo);
     --  pipe in config
@@ -832,17 +815,13 @@ begin
     --------------------------------------------------------------------------
 
     --  read wire out for FIFO pipe out science.
-    ep23 : okWireOut port map(okHE => okHE, okEH => okEHx(8 * 65 - 1 downto 7 * 65), ep_addr => x"23", ep_datain => ep20wire(1));
-    --  read wire out for FIFO pipe out spectrum.
-    -- ep24 : okWireOut port map(okHE => okHE, okEH => okEHx(9 * 65 - 1 downto 8 * 65), ep_addr => x"24", ep_datain => ep21wire(1));
+    ep23 : okWireOut port map(okHE => okHE, okEH => okEHx(8 * 65 - 1 downto 7 * 65), ep_addr => x"23", ep_datain => fifo_count_raw_data(1));
     --  read wire out read wire out spectrum_count_pulse
-    ep25 : okWireOut port map(okHE => okHE, okEH => okEHx(9 * 65 - 1 downto 8 * 65), ep_addr => x"25", ep_datain => ep22wire(1));
+    ep25 : okWireOut port map(okHE => okHE, okEH => okEHx(9 * 65 - 1 downto 8 * 65), ep_addr => x"25", ep_datain => reg_spectrum_count_pulse(1));
     --  pipe in config
-    --ep82 : okPipeIn port map(okHE => okHE, okEH => okEHx(11 * 65 - 1 downto 10 * 65), ep_addr => x"82", ep_write => pipe_in_config_wr_en(1), ep_dataout => pipe_in_config_din(1));
     --  pipe out raw data
     epA3 : okPipeOut port map(okHE => okHE, okEH => okEHx(10 * 65 - 1 downto 9 * 65), ep_addr => x"A3", ep_read => rd_en_fifo_pipe_out_raw_data(1), ep_datain => dout_fifo_pipe_out_raw_data(1));
     --  pipe out spectrum
-    --epA4 : okPipeOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"A4", ep_read => pipe_out_spectrum_rd_en(1), ep_datain => pipe_out_spectrum_dout(1));
 
     -----------------------------------------------------------------------------
     --  Front Panel only for standard definition
@@ -850,44 +829,11 @@ begin
 
     --  pipe out spectrum sd
     epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(11 * 65 - 1 downto 10 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_sd_rd_en, ep_datain => pipe_out_spectrum_sd_dout);
-    --  pipe out spectrum sd
-    --epA6 : okPipeOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"A6", ep_read => pipe_out_spectrum_sd_rd_en(1), ep_datain => pipe_out_spectrum_sd_dout(1));
-
     --  read wire out for FIFO pipe out spectrum sd
-    ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"26", ep_datain => ep26wire);
-    --  read wire out for FIFO pipe out spectrum sd
-    --ep27 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"27", ep_datain => ep26wire(1));
-
+    ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(12 * 65 - 1 downto 11 * 65), ep_addr => x"26", ep_datain => fifo_data_count_spectrum_sd);
     --  read wire out spectrum_count_pulse sd
-    ep28 : okWireOut port map(okHE => okHE, okEH => okEHx(13 * 65 - 1 downto 12 * 65), ep_addr => x"28", ep_datain => ep28wire(0));
+    ep28 : okWireOut port map(okHE => okHE, okEH => okEHx(13 * 65 - 1 downto 12 * 65), ep_addr => x"28", ep_datain => reg_spectrum_sd_count_pulse(0));
     --  read wire out spectrum_count_pulse sd
-    ep29 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"29", ep_datain => ep28wire(1));
-
-    ------------------------------------------
-    -- ALL
-    ------------------------------------------
-    --  read wire out for FIFO pipe out science.
-    --ep26 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"26", ep_datain => ep26wire;
-    --  pipe out spectrum
-    --epA5 : okPipeOut port map(okHE => okHE, okEH => okEHx(15 * 65 - 1 downto 14 * 65), ep_addr => x"A5", ep_read => pipe_out_spectrum_all_rd_en, ep_datain => pipe_out_spectrum_all_dout;
-
-    -----------------------------------------------------------------------------
-    --  Front Panel only for configuration high frequency filter
-    -----------------------------------------------------------------------------
-
-    --  level TH_rise
-    --ep08 : okWireIn port map(okHE => okHE, ep_addr => x"08", ep_dataout => TH_rise_high_frequency);
-    --  level TH_fall
-    --ep09 : okWireIn port map(okHE => okHE, ep_addr => x"09", ep_dataout => TH_fall_high_frequency);
-
-    --  level gain
-    --ep0A : okWireIn port map(okHE => okHE, ep_addr => x"0A", ep_dataout => gain_high_frequency(0));
-    --  level gain
-    --ep0B : okWireIn port map(okHE => okHE, ep_addr => x"0B", ep_dataout => gain_high_frequency(1));
-
-    --    gain_high_frequency(0) <= std_logic_vector(to_signed(2, 32));
-    --    gain_high_frequency(1) <= std_logic_vector(to_signed(2, 32));
-    --    TH_rise_high_frequency <= std_logic_vector(to_signed(100, 32));
-    --    TH_fall_high_frequency <= std_logic_vector(to_signed(50, 32));
+    ep29 : okWireOut port map(okHE => okHE, okEH => okEHx(14 * 65 - 1 downto 13 * 65), ep_addr => x"29", ep_datain => reg_spectrum_sd_count_pulse(1));
 
 end arch;

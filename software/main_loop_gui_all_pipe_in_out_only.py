@@ -655,7 +655,7 @@ des.setpipein(list_pipe_in_array,adresse)
 ###################################  START CAPTURE  ###############################################
 
 start_capture  = 1
-enable_high_filter = 1 # set to one if clear RAM spectrum
+enable_high_filter = 0 # set to one if clear RAM spectrum
 
 print ("start_capture")
 des.start_capture(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
