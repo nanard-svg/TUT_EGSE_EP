@@ -587,7 +587,7 @@ begin
             o_DAC_DIN    => o_DAC_DIN
         );
 
-    o_DAC_on_off <= Num_Data(0);
+    o_DAC_on_off <= level_DAC121S(31);
 
     ------------------------------------------
     --  remote DAC121S101_Driver

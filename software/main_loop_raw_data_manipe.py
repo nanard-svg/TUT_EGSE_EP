@@ -167,42 +167,6 @@ list_pipe_in_array = np.array(formated_lines_coef)
 adresse=0x81
 des.setpipein(list_pipe_in_array,adresse)
 
-print ("Coef")
-file = open('coef_V2_1.txt', "r")
-lines_coef_1 = file.readlines()
-formated_lines_coef_1 = []
-for elm in lines_coef_1 :
-    formated_lines_coef_1.append(int(elm[:-1]))##la liste lines a des eleementr ascii dont on supprime\n avec :-1
-    #formated_lines.append(elm[:-1])
-
-#print("la liste coef est \n {}".format(formated_lines_coef))
-list_pipe_in_array_1 = np.array(formated_lines_coef_1)
-#print("le tableau coef est \n {}".format(list_pipe_in_array))
-adresse=0x82 # filter1
-des.setpipein(list_pipe_in_array_1,adresse)
-
-###################################  SET LEVEL TRIGG  ###############################################
-print ("set trigger_level")
-#level_trig=0xFFFF8EB8
-level_trig= 2400
-level_trig=int(np.uint32(level_trig))
-print(level_trig)
-des.setwire()
-
-print ("set trigger_TH_rise")
-#level_trig=0xFFFF8EB8
-TH_rise= -16000 #-200
-TH_rise=int(np.uint32(TH_rise))
-print(TH_rise)
-des.setwire_TH_rise()
-
-print ("set trigger_TH_fall")
-#level_trig=0xFFFF8EB8
-TH_fall= -11000 #-200
-TH_fall=int(np.uint32(TH_fall))
-print(TH_fall)
-des.setwire_TH_fall()
-
 
 ###################################  START CAPTURE  ###############################################
 

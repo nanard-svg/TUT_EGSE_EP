@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 #################################### CLASS ######################################
 
 number = 0
+cnt = 0
 
 
 class DESTester:
@@ -198,10 +199,12 @@ print ("unRESET")
 des.unResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
 ########################################################################################################
 
-while number < 2 ** 32 :
+while cnt < 2 ** 32 :
 
     print(f"Number is {number}!")
-    number = number + 1
-    time.sleep(1)
+    number = ((number + 100) % 4096)
+    time.sleep(0.2)
     DAC_setup = number
     des.setwire_DAC_setup(DAC_setup)
+
+    cnt = cnt + 1

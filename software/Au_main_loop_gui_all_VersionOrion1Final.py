@@ -115,6 +115,10 @@ class DeviceController:
         self.xem.SetWireInValue(0x0B, gain_filtre1)
         self.xem.UpdateWireIns()
 
+    # Méthode pour définir le DAC et le ON OFF
+    def setwire_DAC(self,DAC_VAL_conv):
+        self.xem.SetWireInValue(0x06, DAC_VAL_conv)
+        self.xem.UpdateWireIns()
 
     # Méthode pour obtenir la valeur d'un fil
     def get_wire(self, address_wire_out):
@@ -220,7 +224,10 @@ class GUIManager:
         
         self.coef_1 = {}
         self.coef_2 = {}
-        
+
+        self.DAC_VAL = 0
+        self.DET_VAL = 0
+
         self.selected_file = 'Signal_ADC_100keV.txt' 
 
         self.initialize_gui()
@@ -244,6 +251,7 @@ class GUIManager:
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.root.bind('<Escape>', self.close_opal_kelly)
         self.root.bind('<Delete>', self.clear_graph)
+        self.root.protocol(name="WM_DELETE_WINDOW", func=lambda: self.close_opal_kelly)
 
         # titre 2
         title_label = tk.Label(self.root, text="GSE GUI 3UT")
@@ -273,6 +281,8 @@ class GUIManager:
         self.tree.insert("", "end", values=("Low threshold |FIR2|", self.threshold2))
         self.tree.insert("", "end", values=("Gain |FIR1|", self.gain1))
         self.tree.insert("", "end", values=("Gain |FIR2|", self.gain2))
+        self.tree.insert("", "end", values=("DAC", self.DAC_VAL))
+        self.tree.insert("", "end", values=("Detector status", self.DET_VAL))
         self.tree.insert("", "end", values=("Integration Time", self.integration_time))
         self.tree.insert("", "end", values=("Current Time", self.current_time))
         self.root.after(200, self.real_time_update_table)
@@ -319,6 +329,8 @@ class GUIManager:
         settings_menu.add_command(label="Set Falling Pulse (0 to 1024)", underline=4, accelerator= "CTRL+L", command= lambda: self.rising_pulse_TL_tk(self.valeur))     
         settings_menu.add_command(label="Set Gain Filter0 (0 to 32)", underline=4, accelerator= "CTRL+G", command= lambda: self.gain_of_filter0(self.valeur))
         settings_menu.add_command(label="Set Gain Filter1 (0 to 32)", underline=5, accelerator= "CTRL+A", command= lambda: self.gain_of_filter1(self.valeur))
+        settings_menu.add_command(label="Set DAC Value (0 to 4095)", underline=5, accelerator= "CTRL+P", command= lambda: self.get_DAC(self.valeur))
+        settings_menu.add_command(label="Set DETECTOR ON (1) OFF (0)", underline=5, accelerator= "CTRL+O", command= lambda: self.get_DET_ON_OFF(self.valeur))
         settings_menu.add_separator()
         #settings_menu.add_command(label="Exit", underline=1, accelerator= "CTRL+X", command=self.quit)
         menubar.add_cascade(label="Settings", menu=settings_menu)
@@ -330,7 +342,8 @@ class GUIManager:
         self.root.bind_all("<Control-g>", lambda x: self.gain_of_filter0(self.valeur))
         self.root.bind_all("<Control-a>", lambda x: self.gain_of_filter1(self.valeur))
         #self.root.bind_all("<Control-x>", lambda x: self.quit())
-
+        self.root.bind_all("<Control-p>", lambda x: self.get_DAC(self.valeur))
+        self.root.bind_all("<Control-o>", lambda x: self.get_DET_ON_OFF(self.valeur))
 
         # Adding push and save file in the toolbar menu
         file_menu = tk.Menu(menubar, tearoff=0)
@@ -456,7 +469,10 @@ class GUIManager:
             print(f"Spectrum saved to {file_path}")
             
             fichier.write("{};\n".format(file_path))
-            
+            today = dt.date.today()
+            fichier.write ("Date : {}\n" .format (today).replace("-","/"))
+
+
             fichier.write("Version FirmWare ; {}.{}\n".format(0,0))
             fichier.write("Version Software ; {}.{}\n".format(0,0))
             
@@ -537,6 +553,19 @@ class GUIManager:
             self.gain2 = filter1
             self.get_gain_filtre1(filter1)
 
+    def get_DAC(self, valeur):
+        DAC_VAL_ask = simpledialog.askinteger("Input", "Enter DAC value:", initialvalue=valeur)
+
+        if DAC_VAL_ask is not None:
+            self.DAC_VAL = DAC_VAL_ask
+            self.get_DAC_VAL(self.DAC_VAL, self.DET_VAL)
+
+    def get_DET_ON_OFF(self, valeur):
+        DET_VAL_ask = simpledialog.askinteger("Input", "Enter Detector ON (1) OFF (0) :", initialvalue=valeur)
+
+        if DET_VAL_ask is not None:
+            self.DET_VAL = DET_VAL_ask
+            self.get_DAC_VAL(self.DET_VAL, self.DET_VAL)
         
 #               #               #               fonction permettant la mise a jours des graphiques              #               #     
 
@@ -605,7 +634,16 @@ class GUIManager:
         gain_filtre1 = int(math.log2(int(valeur)))
         self.device_controller.setwire_gain_filtre1(gain_filtre1)
         print(gain_filtre1)
-        
+
+    def get_DAC_VAL(self, DAC_VAL, DET_VAL) :
+        valeur = DAC_VAL
+        status = DET_VAL
+        print("get_DAC_VAL: {}\nget_DET_status: {}".format(valeur, status))
+        DAC_VAL_conv = valeur + 2**31*status
+        self.device_controller.setwire_DAC(DAC_VAL_conv)
+        print(DAC_VAL_conv)
+
+
     def get_integration_time(self, integration_time_tk):
 
         pass
