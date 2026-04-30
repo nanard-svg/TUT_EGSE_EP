@@ -565,7 +565,7 @@ class GUIManager:
 
         if DET_VAL_ask is not None:
             self.DET_VAL = DET_VAL_ask
-            self.get_DAC_VAL(self.DET_VAL, self.DET_VAL)
+            self.get_DAC_VAL(self.DAC_VAL, self.DET_VAL)
         
 #               #               #               fonction permettant la mise a jours des graphiques              #               #     
 

@@ -122,8 +122,8 @@ class DESTester:
 
 #################################### param ######################################
 
-def param(mode_adc, reset_ram, continuous_ready, start_capture,reset):
-    param_vals = 2**31*mode_adc + 2**30*reset_ram + 2**29*continuous_ready + 2**1*start_capture + 2**0*reset
+def param(mode_adc, enable_high_filter, continuous_ready, start_capture,reset):
+    param_vals = 2**31*mode_adc + 2**30*enable_high_filter + 2**29*continuous_ready + 2**1*start_capture + 2**0*reset
 
     return param_vals
 
@@ -138,19 +138,29 @@ print ("------------------------------------------------------------")
 time.sleep(1)
 ################################## RESET #############################################
 
+enable_high_filter = 1  # set to one if clear RAM spectrum
 reset  = 1
 
-print ("RESET")
-des.ResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+print("unRESET")
+des.unResetDES(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
 
 time.sleep(3)
 
 ################################## UNRESET #############################################
 
+enable_high_filter = 1  # set to one if clear RAM spectrum
 reset  = 0
 
-print ("unRESET")
-des.unResetDES(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+print("unRESET")
+des.unResetDES(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
+
+
+###############################set trigg raw data ############################################
+
+level_trig=10000
+level_trig=int(np.uint32(level_trig))
+print(level_trig)
+des.setwire()
 
 #################################  LOAD COEF  ###################################################
 print ("Coef")
@@ -167,13 +177,28 @@ list_pipe_in_array = np.array(formated_lines_coef)
 adresse=0x81
 des.setpipein(list_pipe_in_array,adresse)
 
+print ("Coef")
+file = open('coef_V2_1.txt', "r")
+lines_coef_1 = file.readlines()
+formated_lines_coef_1 = []
+for elm in lines_coef_1 :
+    formated_lines_coef_1.append(int(elm[:-1]))##la liste lines a des eleementr ascii dont on supprime\n avec :-1
+    #formated_lines.append(elm[:-1])
+
+#print("la liste coef est \n {}".format(formated_lines_coef))
+list_pipe_in_array_1 = np.array(formated_lines_coef_1)
+#print("le tableau coef est \n {}".format(list_pipe_in_array))
+adresse=0x82 # filter1
+des.setpipein(list_pipe_in_array_1,adresse)
+
 
 ###################################  START CAPTURE  ###############################################
 
+enable_high_filter = 1  # set to one if clear RAM spectrum
 start_capture  = 1
 reset  = 0
 print ("start_capture")
-des.start_capture(param(mode_adc, reset_ram, continuous_ready, start_capture, reset))
+des.start_capture(param(mode_adc, enable_high_filter, continuous_ready, start_capture, reset))
 
 
 
